@@ -62,6 +62,8 @@ class BankService
     // Ödeme kuruluşu kodları
     public const PAYNKOLAY = '9978';
 
+    public const PAYNET = '9977';
+
     public const HALKODE = '9979';
 
     public const TAMI = '9980';
@@ -128,6 +130,7 @@ class BankService
         '0010' => \EvrenOnur\SanalPos\Gateways\Banks\Nestpay\ZiraatBankasiGateway::class,
         '0210' => \EvrenOnur\SanalPos\Gateways\Banks\VakifKatilimGateway::class,
 
+        '9977' => \EvrenOnur\SanalPos\Gateways\Providers\PaynetGateway::class,
         '9978' => \EvrenOnur\SanalPos\Gateways\Providers\PayNKolayGateway::class,
         '9979' => \EvrenOnur\SanalPos\Gateways\Providers\CCPayment\HalkOdeGateway::class,
         '9980' => \EvrenOnur\SanalPos\Gateways\Providers\TamiGateway::class,
@@ -189,6 +192,7 @@ class BankService
             new Bank('0210', 'Vakıf Katılım', gatewayClass: self::$gatewayMap['0210'] ?? null),
             new Bank('0209', 'Ziraat Katılım'),
 
+            new Bank('9977', 'Paynet', collective_vpos: true, installment_api: true, commissionAutoAdd: true, gatewayClass: self::$gatewayMap['9977'] ?? null),
             new Bank('9978', 'PayNKolay', collective_vpos: true, installment_api: true, commissionAutoAdd: true, gatewayClass: self::$gatewayMap['9978'] ?? null),
             new Bank('9979', 'HalkÖde', collective_vpos: true, installment_api: true, commissionAutoAdd: true, gatewayClass: self::$gatewayMap['9979'] ?? null),
             new Bank('9980', 'Tami', collective_vpos: true, installment_api: true, commissionAutoAdd: true, gatewayClass: self::$gatewayMap['9980'] ?? null),
