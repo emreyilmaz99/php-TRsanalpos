@@ -271,47 +271,67 @@ class GarantiBBVAGateway extends AbstractGateway
         );
     }
 
-    // Hosted mode docs: Garanti VPos 3D_PAY (secure3dsecuritylevel='3D_PAY') — bankanın
-    // CommonPaymentPage'i; kart bilgisi Garanti tarafından alınır. Hash recipe sale3D ile aynı.
+    // Hosted mode docs: Garanti BBVA "Güvenli Ortak Ödeme Sayfası" (3D_OOS_PAY)
+    // — kart bilgisi Garanti tarafında girilir. Hash SHA512 (apiversion=512).
+    // Resmi dok: https://dev.garantibbva.com.tr/sanal-pos-ortak-odeme-pesin
+    // MerchantAuth mapping: merchant_id=MerchantID, merchant_user=TerminalID,
+    // merchant_password=ProvisionPassword, merchant_storekey=StoreKey.
     public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
     {
         $response = new HostedPaymentResponse(order_number: $request->order_number);
 
         $amount = StringHelper::toKurus($request->sale_info->amount ?? 0);
-        $installment = ($request->sale_info && $request->sale_info->installment > 1)
-            ? (string) $request->sale_info->installment
-            : '';
+        // Garanti OOS tek çekim için "1" gönderilmesini ister (boş null hata veriyor).
+        $installRaw = (int) ($request->sale_info->installment ?? 1);
+        $installCount = $installRaw <= 1 ? '1' : (string) $installRaw;
 
-        $hashedPassword = strtoupper($this->getSHA1(
-            $auth->merchant_password . str_pad((string) ((int) $auth->merchant_user), 9, '0', STR_PAD_LEFT)
-        ));
-        $hash = strtoupper($this->getSHA1(
-            $auth->merchant_user . $request->order_number . $amount .
-            $request->success_url . $request->fail_url .
-            'sales' . $installment . $auth->merchant_storekey . $hashedPassword
+        $terminalId = $auth->merchant_user;
+        $merchantId = $auth->merchant_id;
+        $provUserId = 'PROVAUT';
+
+        // securityData = upper(SHA1(password + zeropad9(terminalId)))
+        $securityData = strtoupper($this->getSHA1(
+            $auth->merchant_password . str_pad($terminalId, 9, '0', STR_PAD_LEFT)
         ));
 
         $param = [
             'mode' => $auth->test_platform ? 'TEST' : 'PROD',
-            'apiversion' => 'v0.01',
-            'version' => 'v0.01',
-            'secure3dsecuritylevel' => '3D_PAY',
-            'terminalprovuserid' => 'PROVAUT',
-            'terminaluserid' => 'PROVAUT',
-            'terminalmerchantid' => $auth->merchant_id,
-            'terminalid' => $auth->merchant_user,
+            'apiversion' => '512',
+            'secure3dsecuritylevel' => '3D_OOS_PAY',
+            'terminalprovuserid' => $provUserId,
+            'terminaluserid' => $provUserId,
+            'terminalmerchantid' => $merchantId,
+            'terminalid' => $terminalId,
             'txntype' => 'sales',
             'txnamount' => $amount,
             'txncurrencycode' => (string) ($request->sale_info->currency?->value ?? 949),
-            'txninstallmentcount' => $installment,
-            'customeripaddress' => $request->customer_ip_address,
-            'customeremailaddress' => $request->invoice_info?->email_address ?? '',
+            'txninstallmentcount' => $installCount,
             'orderid' => $request->order_number,
             'successurl' => $request->success_url,
             'errorurl' => $request->fail_url,
+            'customeripaddress' => $request->customer_ip_address,
+            'customeremailaddress' => $request->invoice_info?->email_address ?? 'noreply@example.com',
+            'companyname' => $request->invoice_info?->name ?? 'Merchant',
             'lang' => $request->language ?: 'tr',
-            'secure3dhash' => $hash,
+            'txntimestamp' => gmdate('Y-m-d\TH:i:s.000\Z'),
         ];
+
+        // secure3dhash = upper(SHA512(
+        //   terminalid + orderid + txnamount + txncurrencycode + successurl +
+        //   errorurl + txntype + txninstallmentcount + storeKey + securityData
+        // ))
+        $param['secure3dhash'] = strtoupper(hash('sha512', implode('', [
+            $param['terminalid'],
+            $param['orderid'],
+            $param['txnamount'],
+            $param['txncurrencycode'],
+            $param['successurl'],
+            $param['errorurl'],
+            $param['txntype'],
+            $param['txninstallmentcount'],
+            $auth->merchant_storekey,
+            $securityData,
+        ])));
 
         $response->status = ResponseStatus::Success;
         $response->message = 'Hosted ödeme formu hazırlandı';
@@ -322,33 +342,74 @@ class GarantiBBVAGateway extends AbstractGateway
         return $response;
     }
 
-    // Hosted mode docs: Garanti hosted callback — 3D_PAY akışında banka tek seferde
-    // hem doğrulama hem authorization yapar; mdstatus=1 ve Response.Code=00 başarı.
+    // Hosted mode docs: Garanti 3D_OOS_PAY callback — hashparamsval+storeKey üzerinden
+    // base64(SHA1(...)) hash doğrulaması. Başarı kriteri: hash valid + mdstatus∈{1,2,3,4}
+    // + procreturncode='00' + response='Approved'.
     public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
     {
         $payload = $callback->payload;
 
         $response = new SaleResponse(
             status: SaleResponseStatus::Error,
-            order_number: (string) ($payload['oid'] ?? $callback->order_number),
+            order_number: (string) ($payload['oid'] ?? ($payload['orderid'] ?? $callback->order_number)),
             private_response: $payload,
         );
 
-        $mdstatus = (string) ($payload['mdstatus'] ?? '');
-        $procReturn = (string) ($payload['procreturncode'] ?? ($payload['ProcReturnCode'] ?? ''));
-        $response_field = strtolower((string) ($payload['response'] ?? ($payload['Response'] ?? '')));
+        $hashValid = $this->validateCallbackHash($payload, $auth->merchant_storekey);
 
-        if ($mdstatus === '1' && ($procReturn === '00' || $response_field === 'approved')) {
+        $mdStatus = (string) ($payload['mdstatus'] ?? '');
+        $procReturnCode = (string) ($payload['procreturncode'] ?? '');
+        $responseField = strtolower((string) ($payload['response'] ?? ''));
+
+        $isSuccess = $hashValid
+            && in_array($mdStatus, ['1', '2', '3', '4'], true)
+            && $procReturnCode === '00'
+            && $responseField === 'approved';
+
+        if ($isSuccess) {
             $response->status = SaleResponseStatus::Success;
             $response->message = 'İşlem başarılı';
-            $response->transaction_id = (string) ($payload['transid'] ?? ($payload['authcode'] ?? ''));
+            $response->transaction_id = (string) ($payload['authcode'] ?? '');
+        } elseif (! $hashValid) {
+            $response->message = 'Hash doğrulaması başarısız';
         } else {
-            $response->message = $payload['errmsg']
-                ?? $payload['mderrormessage']
-                ?? '3-D Secure doğrulanamadı';
+            $response->message = (string) ($payload['mderrormessage'] ?? ($payload['errmsg'] ?? 'Ödeme başarısız'));
         }
 
         return $response;
+    }
+
+    /**
+     * Garanti OOS callback hash doğrulaması.
+     * Algoritma: base64(SHA1(hashparamsval + storeKey)).
+     * Garanti `hashparamsval`'i çoğunlukla hazır gönderir; yoksa hashparams field
+     * listesindeki değerleri concat ederek inşa ederiz.
+     */
+    private function validateCallbackHash(array $payload, string $storeKey): bool
+    {
+        $providedHash = (string) ($payload['hash'] ?? '');
+        if ($providedHash === '') {
+            return false;
+        }
+
+        $hashParamsVal = (string) ($payload['hashparamsval'] ?? '');
+        if ($hashParamsVal === '') {
+            $hashParams = (string) ($payload['hashparams'] ?? '');
+            foreach (explode(':', $hashParams) as $field) {
+                if ($field === '') {
+                    continue;
+                }
+                $hashParamsVal .= (string) ($payload[$field] ?? '');
+            }
+        }
+
+        if ($hashParamsVal === '') {
+            return false;
+        }
+
+        $expected = base64_encode(sha1($hashParamsVal . $storeKey, true));
+
+        return hash_equals($expected, $providedHash);
     }
 
     // --- Private helpers ---
