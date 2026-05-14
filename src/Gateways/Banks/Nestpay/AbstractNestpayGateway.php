@@ -8,6 +8,8 @@ use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
@@ -16,6 +18,7 @@ use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
@@ -282,6 +285,96 @@ abstract class AbstractNestpayGateway implements VirtualPOSServiceInterface
                 $response->status = ResponseStatus::Success;
                 $response->message = 'İşlem başarıyla tamamlandı';
             }
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: NestPay 3D_PAY_HOSTING storetype — kart bilgisi banka sayfasında alınır.
+    // Aynı hash algoritması (ver3) ve aynı 3D gateway URL'i kullanılır; sale3D'den farkı pan/cv2/expdate yokluğu.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $installment = $request->sale_info && $request->sale_info->installment > 1
+            ? (string) $request->sale_info->installment
+            : '';
+
+        $param = [
+            'clientid' => $auth->merchant_id,
+            'amount' => StringHelper::formatAmount($request->sale_info->amount ?? 0),
+            'oid' => $request->order_number,
+            'okUrl' => $request->success_url,
+            'failUrl' => $request->fail_url,
+            'rnd' => (string) (int) (microtime(true) * 1000),
+            'storetype' => '3d_pay_hosting',
+            'lang' => $request->language ?: 'tr',
+            'currency' => (string) ($request->sale_info->currency?->value ?? 949),
+            'installment' => $installment,
+            'taksit' => $installment,
+            'islemtipi' => 'Auth',
+            'hashAlgorithm' => 'ver3',
+        ];
+
+        ksort($param);
+        $hashValues = [];
+        foreach ($param as $value) {
+            $escaped = str_replace('\\', '\\\\', str_replace('|', '\\|', (string) $value));
+            $hashValues[] = $escaped;
+        }
+        $hashStr = implode('|', $hashValues) . '|' . $auth->merchant_storekey;
+        $param['hash'] = $this->getHash($hashStr);
+
+        $url3D = $auth->test_platform ? $this->getUrl3DTest() : $this->getUrl3DLive();
+
+        return new HostedPaymentResponse(
+            status: ResponseStatus::Success,
+            message: 'Hosted ödeme formu hazırlandı',
+            order_number: $request->order_number,
+            redirect_method: 'POST',
+            redirect_url: $url3D,
+            form_fields: $param,
+        );
+    }
+
+    // Hosted mode docs: NestPay bank POSTs back to okUrl/failUrl with mdStatus + HASHPARAMS + HASH;
+    // hash recipe = base64(sha512(concat(HASHPARAMS değerleri) + storekey)).
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: $payload['oid'] ?? $callback->order_number,
+            message: 'Hosted ödeme doğrulanamadı',
+            private_response: $payload,
+        );
+
+        $hashParams = $payload['HASHPARAMS'] ?? $payload['hashparams'] ?? '';
+        $providedHash = $payload['HASH'] ?? $payload['hash'] ?? '';
+
+        if (! empty($hashParams) && ! empty($providedHash)) {
+            $fields = array_filter(explode(':', $hashParams), static fn ($f) => $f !== '');
+            $concat = '';
+            foreach ($fields as $f) {
+                $concat .= (string) ($payload[$f] ?? '');
+            }
+            $expected = $this->getHash($concat . $auth->merchant_storekey);
+
+            if (! hash_equals($expected, $providedHash)) {
+                $response->message = 'Hosted ödeme hash doğrulaması başarısız';
+
+                return $response;
+            }
+        }
+
+        $mdStatus = (string) ($payload['mdStatus'] ?? '');
+        $procReturnCode = (string) ($payload['ProcReturnCode'] ?? '');
+
+        if (in_array($mdStatus, ['1', '2', '3', '4'], true) && $procReturnCode === '00') {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'İşlem başarıyla tamamlandı';
+            $response->transaction_id = (string) ($payload['TransId'] ?? '');
+        } else {
+            $response->message = $payload['ErrMsg'] ?? $payload['mdErrorMsg'] ?? '3D doğrulaması başarısız.';
         }
 
         return $response;

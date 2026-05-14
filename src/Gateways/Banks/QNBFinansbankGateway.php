@@ -4,10 +4,13 @@ namespace EvrenOnur\SanalPos\Gateways\Banks;
 
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\ResponseStatus;
@@ -197,6 +200,70 @@ class QNBFinansbankGateway extends AbstractGateway
             $response->message = $dic['ErrMsg'];
         } else {
             $response->message = 'İşlem iade edilemedi';
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: QNB Finansbank Intertech VPOS 3DPayHosting — sale3D ile aynı recipe,
+    // SecureType='3DPayHosting' ve kart alanları yok. MbrId=5.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+        $rnd = str_replace('-', '', bin2hex(random_bytes(16)));
+        $installment = ($request->sale_info && $request->sale_info->installment > 1)
+            ? (string) $request->sale_info->installment
+            : '0';
+
+        $req = [
+            'MbrId' => '5',
+            'MerchantId' => $auth->merchant_id,
+            'UserCode' => $auth->merchant_user,
+            'UserPass' => $auth->merchant_password,
+            'TxnType' => 'Auth',
+            'SecureType' => '3DPayHosting',
+            'InstallmentCount' => $installment,
+            'PurchAmount' => StringHelper::formatAmount($request->sale_info->amount ?? 0),
+            'Currency' => (string) ($request->sale_info->currency?->value ?? 949),
+            'OrderId' => $request->order_number,
+            'OkUrl' => $request->success_url,
+            'FailUrl' => $request->fail_url,
+            'Rnd' => $rnd,
+            'Lang' => strtoupper($request->language ?: 'tr'),
+            'Hash' => '',
+        ];
+
+        $req['Hash'] = StringHelper::sha1Base64(
+            $req['MbrId'] . $req['OrderId'] . $req['PurchAmount'] .
+            $req['OkUrl'] . $req['FailUrl'] . $req['TxnType'] .
+            $req['InstallmentCount'] . $req['Rnd'] . $auth->merchant_storekey
+        );
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme formu hazırlandı';
+        $response->redirect_method = 'POST';
+        $response->redirect_url = $auth->test_platform ? $this->urlAPITest : $this->urlAPILive;
+        $response->form_fields = $req;
+
+        return $response;
+    }
+
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['OrderId'] ?? $callback->order_number),
+            transaction_id: (string) ($payload['TransId'] ?? ''),
+            private_response: $payload,
+        );
+
+        if (($payload['ProcReturnCode'] ?? '') === '00') {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'İşlem başarılı';
+        } else {
+            $response->message = $payload['ErrMsg'] ?? ($payload['ErrorMessage'] ?? '3D doğrulaması başarısız');
         }
 
         return $response;

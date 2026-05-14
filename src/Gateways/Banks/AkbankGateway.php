@@ -4,10 +4,13 @@ namespace EvrenOnur\SanalPos\Gateways\Banks;
 
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\Currency;
@@ -25,6 +28,10 @@ class AkbankGateway extends AbstractGateway
     private string $url3DTest = 'https://virtualpospaymentgatewaypre.akbank.com/securepay';
 
     private string $url3DLive = 'https://virtualpospaymentgateway.akbank.com/securepay';
+
+    private string $urlPayHostingTest = 'https://virtualpospaymentgatewaypre.akbank.com/payhosting';
+
+    private string $urlPayHostingLive = 'https://virtualpospaymentgateway.akbank.com/payhosting';
 
     public function sale(SaleRequest $request, MerchantAuth $auth): SaleResponse
     {
@@ -307,6 +314,83 @@ class AkbankGateway extends AbstractGateway
             $response->message = $responseDic['responseMessage'];
         } else {
             $response->message = 'İşlem iade edilemedi';
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: Akbank VPos 3D_PAY_HOSTING — kart bankanın kendi sayfasında alınır.
+    // Endpoint: /payhosting (securepay'den farklı), hash recipe sale3D ile aynı ama kart alanları yok.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+
+        $request->sale_info->currency = $request->sale_info->currency ?? Currency::TRY;
+        $request->sale_info->installment = $request->sale_info->installment > 1 ? $request->sale_info->installment : 1;
+
+        $totalStr = StringHelper::formatAmount($request->sale_info->amount);
+        $email = ! empty($request->invoice_info?->email_address) ? $request->invoice_info->email_address : 'test@test.com';
+
+        $req = [
+            'paymentModel' => '3D_PAY_HOSTING',
+            'txnCode' => '3000',
+            'merchantSafeId' => $auth->merchant_user,
+            'terminalSafeId' => $auth->merchant_password,
+            'orderId' => $request->order_number,
+            'lang' => strtoupper($request->language ?: 'tr'),
+            'amount' => $totalStr,
+            'currencyCode' => (string) $request->sale_info->currency->value,
+            'installCount' => (string) $request->sale_info->installment,
+            'okUrl' => $request->success_url,
+            'failUrl' => $request->fail_url,
+            'emailAddress' => $email,
+            'randomNumber' => $this->getRandomHex(128),
+            'requestDateTime' => date('Y-m-d\TH:i:s.v'),
+            'hash' => '',
+        ];
+
+        // Hash recipe: sale3D ile aynı sıralama, kart alanları (creditCard/expiredDate/cvv) yok.
+        $hashItems = $req['paymentModel'] . $req['txnCode'] . $req['merchantSafeId'] .
+            $req['terminalSafeId'] . $req['orderId'] . $req['lang'] .
+            $req['amount'] . $req['currencyCode'] . $req['installCount'] .
+            $req['okUrl'] . $req['failUrl'] . $req['emailAddress'] .
+            $req['randomNumber'] . $req['requestDateTime'];
+
+        $req['hash'] = $this->hmacHash($hashItems, $auth->merchant_storekey);
+
+        $link = $auth->test_platform ? $this->urlPayHostingTest : $this->urlPayHostingLive;
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme formu hazırlandı';
+        $response->redirect_method = 'POST';
+        $response->redirect_url = $link;
+        $response->form_fields = $req;
+
+        return $response;
+    }
+
+    // Hosted mode docs: Akbank okUrl/failUrl POST callback — responseCode=VPS-0000 + mdStatus=1 başarı.
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['orderId'] ?? $callback->order_number),
+            private_response: $payload,
+        );
+
+        $responseCode = (string) ($payload['responseCode'] ?? '');
+        $mdStatus = (string) ($payload['mdStatus'] ?? '');
+
+        if ($responseCode === 'VPS-0000' && in_array($mdStatus, ['1', '2', '3', '4'], true)) {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'İşlem başarılı';
+            $response->transaction_id = (string) ($payload['authCode'] ?? ($payload['hostTransactionId'] ?? ''));
+        } else {
+            $response->message = $payload['responseMessage']
+                ?? $payload['mdErrorMsg']
+                ?? '3D doğrulaması başarısız';
         }
 
         return $response;

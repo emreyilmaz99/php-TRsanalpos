@@ -3,9 +3,13 @@
 namespace EvrenOnur\SanalPos\Gateways\Banks;
 
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
+use EvrenOnur\SanalPos\Enums\ResponseStatus;
 use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
@@ -265,6 +269,86 @@ class GarantiBBVAGateway extends AbstractGateway
             order_number: $ra['oid'] ?? '',
             private_response: $dic,
         );
+    }
+
+    // Hosted mode docs: Garanti VPos 3D_PAY (secure3dsecuritylevel='3D_PAY') — bankanın
+    // CommonPaymentPage'i; kart bilgisi Garanti tarafından alınır. Hash recipe sale3D ile aynı.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+
+        $amount = StringHelper::toKurus($request->sale_info->amount ?? 0);
+        $installment = ($request->sale_info && $request->sale_info->installment > 1)
+            ? (string) $request->sale_info->installment
+            : '';
+
+        $hashedPassword = strtoupper($this->getSHA1(
+            $auth->merchant_password . str_pad((string) ((int) $auth->merchant_user), 9, '0', STR_PAD_LEFT)
+        ));
+        $hash = strtoupper($this->getSHA1(
+            $auth->merchant_user . $request->order_number . $amount .
+            $request->success_url . $request->fail_url .
+            'sales' . $installment . $auth->merchant_storekey . $hashedPassword
+        ));
+
+        $param = [
+            'mode' => $auth->test_platform ? 'TEST' : 'PROD',
+            'apiversion' => 'v0.01',
+            'version' => 'v0.01',
+            'secure3dsecuritylevel' => '3D_PAY',
+            'terminalprovuserid' => 'PROVAUT',
+            'terminaluserid' => 'PROVAUT',
+            'terminalmerchantid' => $auth->merchant_id,
+            'terminalid' => $auth->merchant_user,
+            'txntype' => 'sales',
+            'txnamount' => $amount,
+            'txncurrencycode' => (string) ($request->sale_info->currency?->value ?? 949),
+            'txninstallmentcount' => $installment,
+            'customeripaddress' => $request->customer_ip_address,
+            'customeremailaddress' => $request->invoice_info?->email_address ?? '',
+            'orderid' => $request->order_number,
+            'successurl' => $request->success_url,
+            'errorurl' => $request->fail_url,
+            'lang' => $request->language ?: 'tr',
+            'secure3dhash' => $hash,
+        ];
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme formu hazırlandı';
+        $response->redirect_method = 'POST';
+        $response->redirect_url = $auth->test_platform ? $this->url3DTest : $this->url3DLive;
+        $response->form_fields = $param;
+
+        return $response;
+    }
+
+    // Hosted mode docs: Garanti hosted callback — 3D_PAY akışında banka tek seferde
+    // hem doğrulama hem authorization yapar; mdstatus=1 ve Response.Code=00 başarı.
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['oid'] ?? $callback->order_number),
+            private_response: $payload,
+        );
+
+        $mdstatus = (string) ($payload['mdstatus'] ?? '');
+        $procReturn = (string) ($payload['procreturncode'] ?? ($payload['ProcReturnCode'] ?? ''));
+        $response_field = strtolower((string) ($payload['response'] ?? ($payload['Response'] ?? '')));
+
+        if ($mdstatus === '1' && ($procReturn === '00' || $response_field === 'approved')) {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'İşlem başarılı';
+            $response->transaction_id = (string) ($payload['transid'] ?? ($payload['authcode'] ?? ''));
+        } else {
+            $response->message = $payload['errmsg']
+                ?? $payload['mderrormessage']
+                ?? '3-D Secure doğrulanamadı';
+        }
+
+        return $response;
     }
 
     // --- Private helpers ---

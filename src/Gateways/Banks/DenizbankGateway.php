@@ -4,10 +4,13 @@ namespace EvrenOnur\SanalPos\Gateways\Banks;
 
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\ResponseStatus;
@@ -196,6 +199,66 @@ class DenizbankGateway extends AbstractGateway
             $response->message = $dic['ErrorMessage'];
         } else {
             $response->message = 'İşlem iade edilemedi';
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: Intertech VPOS 3DPayHosting — sale3D ile aynı endpoint ve hash recipe,
+    // SecureType='3DPayHosting' ve kart alanları (Pan/Cvv2/Expiry) yok.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+        $rnd = str_replace('-', '', bin2hex(random_bytes(16)));
+
+        $req = [
+            'ShopCode' => $auth->merchant_id,
+            'PurchAmount' => StringHelper::formatAmount($request->sale_info->amount ?? 0),
+            'Currency' => (string) ($request->sale_info->currency?->value ?? 949),
+            'OrderId' => $request->order_number,
+            'OkUrl' => $request->success_url,
+            'FailUrl' => $request->fail_url,
+            'Rnd' => $rnd,
+            'TxnType' => 'Auth',
+            'InstallmentCount' => ($request->sale_info && $request->sale_info->installment > 1)
+                ? (string) $request->sale_info->installment
+                : '0',
+            'SecureType' => '3DPayHosting',
+            'Lang' => strtoupper($request->language ?: 'tr'),
+        ];
+
+        $req['Hash'] = StringHelper::sha1Base64(
+            $req['ShopCode'] . $req['OrderId'] . $req['PurchAmount'] . $req['OkUrl'] .
+            $req['FailUrl'] . $req['TxnType'] . $req['InstallmentCount'] . $req['Rnd'] .
+            $auth->merchant_storekey
+        );
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme formu hazırlandı';
+        $response->redirect_method = 'POST';
+        $response->redirect_url = $auth->test_platform ? $this->urlAPITest : $this->urlAPILive;
+        $response->form_fields = $req;
+
+        return $response;
+    }
+
+    // Hosted mode docs: Intertech VPOS callback ProcReturnCode=00 = başarı, sale3DResponse ile aynı pattern.
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['OrderId'] ?? $callback->order_number),
+            transaction_id: (string) ($payload['TransId'] ?? ''),
+            private_response: $payload,
+        );
+
+        if (($payload['ProcReturnCode'] ?? '') === '00') {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'İşlem başarılı';
+        } else {
+            $response->message = $payload['ErrorMessage'] ?? '3D doğrulaması başarısız';
         }
 
         return $response;

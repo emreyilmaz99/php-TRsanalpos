@@ -5,11 +5,14 @@ namespace EvrenOnur\SanalPos\Gateways\Providers;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\ResponseStatus;
@@ -25,8 +28,10 @@ use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoPaymentCard;
 use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
 use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateAmountBasedRefundRequest;
 use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateCancelRequest;
+use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateCheckoutFormInitializeRequest;
 use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreatePaymentRequest;
 use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateThreedsPaymentRequest;
+use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\RetrieveCheckoutFormRequest;
 use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\RetrieveInstallmentInfoRequest;
 
 /**
@@ -350,6 +355,147 @@ class IyzicoGateway extends AbstractGateway
                     }
                 }
             }
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: https://docs.iyzico.com/api-ile-entegrasyon/odeme-formu-ile-odeme-alma
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+
+        if (empty($request->customer_ip_address)) {
+            $request->customer_ip_address = '1.1.1.1';
+        }
+
+        if ($request->invoice_info !== null && empty($request->invoice_info->tax_number)) {
+            $request->invoice_info->tax_number = '11111111111';
+        }
+
+        $amount = $this->formatIyzicoPrice($request->sale_info->amount);
+
+        $req = new CreateCheckoutFormInitializeRequest;
+        $req->locale = $request->language ?: 'tr';
+        $req->conversationId = $request->order_number;
+        $req->price = $amount;
+        $req->paidPrice = $amount;
+        $req->currency = $request->sale_info->currency?->name ?? 'TRY';
+        $req->basketId = $request->order_number;
+        $req->paymentGroup = 'PRODUCT';
+        $req->callbackUrl = $request->success_url;
+
+        if ($request->sale_info->installment > 1) {
+            $req->enabledInstallments = [$request->sale_info->installment];
+        }
+
+        $buyer = new IyzicoBuyer;
+        $buyer->id = $request->invoice_info?->email_address ?? 'buyer@test.com';
+        $buyer->name = $request->invoice_info?->name ?? 'Müşteri';
+        $buyer->surname = $request->invoice_info?->surname ?? $request->invoice_info?->name ?? 'Müşteri';
+        $buyer->gsmNumber = $request->invoice_info?->phone_number ?? '';
+        $buyer->email = $request->invoice_info?->email_address ?? '';
+        $buyer->identityNumber = $request->invoice_info?->tax_number ?? '11111111111';
+        $buyer->registrationAddress = $request->invoice_info?->address_description ?? '';
+        $buyer->ip = $request->customer_ip_address;
+        $buyer->city = $request->invoice_info?->city_name ?? '';
+        $buyer->country = $request->invoice_info?->country?->name ?? 'Turkey';
+        $buyer->zipCode = $request->invoice_info?->post_code ?? '';
+        $req->buyer = $buyer;
+
+        $shippingAddress = new IyzicoAddress;
+        $shippingAddress->contactName = $request->shipping_info?->name ?? $request->invoice_info?->name ?? 'Müşteri';
+        $shippingAddress->city = $request->shipping_info?->city_name ?? '';
+        $shippingAddress->country = $request->shipping_info?->country?->name ?? 'Turkey';
+        $shippingAddress->address = $request->shipping_info?->address_description ?? '';
+        $shippingAddress->zipCode = $request->shipping_info?->post_code ?? '';
+        $req->shippingAddress = $shippingAddress;
+
+        $billingAddress = new IyzicoAddress;
+        $billingAddress->contactName = $request->invoice_info?->name ?? 'Müşteri';
+        $billingAddress->city = $request->invoice_info?->city_name ?? '';
+        $billingAddress->country = $request->invoice_info?->country?->name ?? 'Turkey';
+        $billingAddress->address = $request->invoice_info?->address_description ?? '';
+        $billingAddress->zipCode = $request->invoice_info?->post_code ?? '';
+        $req->billingAddress = $billingAddress;
+
+        $basketItem = new IyzicoBasketItem;
+        $basketItem->id = 'TAHSILAT';
+        $basketItem->name = 'Cari Tahsilat';
+        $basketItem->category1 = 'Tahsilat';
+        $basketItem->itemType = 'VIRTUAL';
+        $basketItem->price = $amount;
+        $req->basketItems = [$basketItem];
+
+        $options = $this->getOptions($auth);
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+
+        $result = IyzicoHttpClient::post(
+            $options->baseUrl . '/payment/iyzipos/checkoutform/initialize/auth/ecom',
+            $headers,
+            $req->toArray()
+        );
+
+        $response->private_response = $result;
+
+        if (($result['status'] ?? '') === 'success') {
+            $response->status = ResponseStatus::Success;
+            $response->message = 'CheckoutForm başarıyla oluşturuldu';
+            $response->redirect_method = 'GET';
+            $response->redirect_url = $result['paymentPageUrl'] ?? '';
+            $response->token = $result['token'] ?? null;
+        } else {
+            $response->status = ResponseStatus::Error;
+            $response->message = $result['errorMessage'] ?? 'CheckoutForm oluşturulamadı';
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: https://docs.iyzico.com/api-ile-entegrasyon/odeme-formu-ile-odeme-alma
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: $callback->order_number,
+        );
+
+        $token = $callback->token ?? ($callback->payload['token'] ?? null);
+
+        if (empty($token)) {
+            $response->message = 'Iyzico CheckoutForm callback token bulunamadı';
+
+            return $response;
+        }
+
+        $req = new RetrieveCheckoutFormRequest;
+        $req->locale = 'tr';
+        $req->conversationId = $callback->order_number;
+        $req->token = $token;
+
+        $options = $this->getOptions($auth);
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+
+        $result = IyzicoHttpClient::post(
+            $options->baseUrl . '/payment/iyzipos/checkoutform/auth/ecom/detail',
+            $headers,
+            $req->toArray()
+        );
+
+        $response->private_response = $result;
+
+        $status = $result['status'] ?? '';
+        $paymentStatus = $result['paymentStatus'] ?? '';
+
+        if ($status === 'success' && $paymentStatus === 'SUCCESS') {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'Ödeme başarılı';
+            $response->transaction_id = (string) ($result['paymentId'] ?? '');
+            if (! empty($result['conversationId'])) {
+                $response->order_number = (string) $result['conversationId'];
+            }
+        } else {
+            $response->message = $result['errorMessage'] ?? 'Ödeme tamamlanamadı';
         }
 
         return $response;

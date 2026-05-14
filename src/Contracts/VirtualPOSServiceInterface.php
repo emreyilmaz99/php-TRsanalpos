@@ -7,6 +7,8 @@ use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
@@ -15,6 +17,7 @@ use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
@@ -61,4 +64,17 @@ interface VirtualPOSServiceInterface
      * Tekil işlem sorgulama
      */
     public function saleQuery(SaleQueryRequest $request, MerchantAuth $auth): SaleQueryResponse;
+
+    /**
+     * Hosted ödeme akışı başlatır. Kart bilgisi gerektirmez; bankanın
+     * barındırdığı ödeme sayfasına yönlendirme/form üretir. Kart kullanıcı
+     * tarafından banka sayfasında girilir.
+     */
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse;
+
+    /**
+     * Hosted ödeme akışında banka geri dönüşünü (success/fail callback) doğrular
+     * ve nihai SaleResponse'a çevirir.
+     */
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse;
 }

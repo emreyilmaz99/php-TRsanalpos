@@ -9,6 +9,8 @@ use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
@@ -17,6 +19,7 @@ use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
@@ -410,6 +413,34 @@ abstract class AbstractCCPaymentGateway implements VirtualPOSServiceInterface
     public function saleQuery(SaleQueryRequest $request, MerchantAuth $auth): SaleQueryResponse
     {
         return new SaleQueryResponse(status: SaleQueryResponseStatus::Error, message: 'Bu sanal pos için satış sorgulama işlemi şuan desteklenmiyor');
+    }
+
+    // TODO: CCPayment ailesi (Sipay/QNBPay/PayBull/Vepara/Parolapara/IQmoney/HalkOde) hosted-payment.
+    // Belirsizlikler:
+    //   - paySmart3D `payment_completed_by='app'` ile gerçekten kart-içeriği olmadan akış destekliyor mu?
+    //   - QNBPay vs. Sipay arasında response shape farkı (Sipay HTML, QNBPay JSON `data.redirect_url`)
+    //   - Hash recipe sale3D ile aynı kalır (sha256+aes), karta bağlı değil
+    // Doc kaynakları:
+    //   - https://apidocs.sipay.com.tr (paySmart3D)
+    //   - https://test.qnbpay.com.tr/ccpayment
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        return new HostedPaymentResponse(
+            status: ResponseStatus::Error,
+            message: 'CCPayment hosted (kart-içermeyen) akışı henüz desteklenmiyor. Doğrulama için bkz: TODO AbstractCCPaymentGateway.',
+            order_number: $request->order_number,
+        );
+    }
+
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        // CCPayment hosted resolve callback'i için sale3DResponse() recipe'i (hash_key validation + md_status=1 + complete-payment)
+        // referans alınabilir; ancak hosted akış henüz devreye alınmadığından implementasyon ertelendi.
+        return new SaleResponse(
+            status: SaleResponseStatus::Error,
+            message: 'CCPayment hosted callback çözümleme henüz desteklenmiyor.',
+            order_number: $callback->order_number,
+        );
     }
 
     // --- Protected/Private Helpers ---

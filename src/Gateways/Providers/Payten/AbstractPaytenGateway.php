@@ -8,6 +8,8 @@ use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
@@ -16,6 +18,7 @@ use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
@@ -286,6 +289,86 @@ abstract class AbstractPaytenGateway implements VirtualPOSServiceInterface
     public function saleQuery(SaleQueryRequest $request, MerchantAuth $auth): SaleQueryResponse
     {
         return new SaleQueryResponse(status: SaleQueryResponseStatus::Error, message: 'Bu sanal pos için satış sorgulama işlemi şuan desteklenmiyor');
+    }
+
+    // Hosted mode docs: Payten 3DServer hosted akışı — aynı SESSIONTOKEN action ile token alınır,
+    // dönen 3D URL'i ({0}=token) müşterinin yönlendirileceği hosted ödeme sayfasıdır.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+        $apiUrl = $auth->test_platform ? $this->getApiTestUrl() : $this->getApiLiveUrl();
+
+        $customerName = trim(($request->invoice_info?->name ?? '') . ' ' . ($request->invoice_info?->surname ?? ''));
+
+        $params = [
+            'ACTION' => 'SESSIONTOKEN',
+            'SESSIONTYPE' => 'PAYMENTSESSION',
+            'MERCHANT' => $auth->merchant_id,
+            'MERCHANTUSER' => $auth->merchant_user,
+            'MERCHANTPASSWORD' => $auth->merchant_password,
+            'CUSTOMER' => $request->customer_ip_address,
+            'CUSTOMERNAME' => $customerName ?: 'Customer',
+            'CUSTOMEREMAIL' => $request->invoice_info?->email_address ?? '',
+            'CUSTOMERIP' => $request->customer_ip_address,
+            'CUSTOMERPHONE' => $request->invoice_info?->phone_number ?? '',
+            'MERCHANTPAYMENTID' => $request->order_number,
+            'AMOUNT' => StringHelper::formatAmount($request->sale_info->amount ?? 0),
+            'CURRENCY' => StringHelper::getCurrencyCode($request->sale_info->currency ?? Currency::TRY),
+            'INSTALLMENTS' => (string) ($request->sale_info->installment ?? 1),
+            'RETURNURL' => $request->success_url,
+        ];
+
+        if (! empty($auth->merchant_storekey)) {
+            $params['DEALERTYPENAME'] = $auth->merchant_storekey;
+        }
+
+        $resp = $this->formRequest($params, $apiUrl);
+        $dic = json_decode($resp, true) ?? [];
+        $response->private_response = $dic;
+
+        $sessionToken = $dic['sessionToken'] ?? '';
+        if (empty($sessionToken)) {
+            $response->status = ResponseStatus::Error;
+            $response->message = $dic['responseMsg'] ?? ($dic['errorMsg'] ?? 'Oturum anahtarı alınamadı');
+
+            return $response;
+        }
+
+        $url3D = $auth->test_platform ? $this->get3DTestUrl() : $this->get3DLiveUrl();
+        $url3D = str_replace('{0}', $sessionToken, $url3D);
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme oturumu hazırlandı';
+        $response->redirect_method = 'GET';
+        $response->redirect_url = $url3D;
+        $response->token = $sessionToken;
+
+        return $response;
+    }
+
+    // Hosted mode docs: Payten callback responseCode=00 ile başarı; pgTranId transaction_id, merchantPaymentId order_number.
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['merchantPaymentId'] ?? $callback->order_number),
+            transaction_id: (string) ($payload['pgTranId'] ?? ''),
+            private_response: $payload,
+        );
+
+        $responseCode = (string) ($payload['responseCode'] ?? '');
+        if ($responseCode === '00') {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'İşlem başarılı';
+        } else {
+            $errorCode = (string) ($payload['errorCode'] ?? '');
+            $errorMsg = $payload['pgTranErrorText'] ?? ($payload['errorMsg'] ?? '');
+            $response->message = ! empty($errorCode) ? $this->getErrorDesc($errorCode) : ($errorMsg ?: 'İşlem sırasında bir hata oluştu');
+        }
+
+        return $response;
     }
 
     // --- Protected/Private helpers ---
