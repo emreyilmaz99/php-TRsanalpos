@@ -45,4 +45,78 @@ class CardDataRedactor
 
         return str_repeat('*', strlen($cvv));
     }
+
+    /**
+     * HTTP request/response body içinde geçen kart alan adlarını otomatik maskeler.
+     * Türkiye'deki yaygın gateway field name varyasyonlarını kapsar.
+     */
+    public static function redactPayload(mixed $payload): mixed
+    {
+        if (is_string($payload)) {
+            return self::redactString($payload);
+        }
+
+        if (is_array($payload)) {
+            $result = [];
+            foreach ($payload as $key => $value) {
+                $result[$key] = self::shouldRedactKey((string) $key)
+                    ? self::redactValue($key, $value)
+                    : self::redactPayload($value);
+            }
+
+            return $result;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Belirli field adlarının maskelenmesi gerektiğini söyler.
+     * Türkiye gateway'lerinin çeşitli isimlendirmelerini karşılar.
+     */
+    private static function shouldRedactKey(string $key): bool
+    {
+        $normalized = strtolower(str_replace(['_', '-'], '', $key));
+
+        // CVV grubu — her zaman tamamen maskelenir
+        if (in_array($normalized, ['cvv', 'cvc', 'cv2', 'cvv2', 'cvv2val', 'cvcnumber'], true)) {
+            return true;
+        }
+
+        // PAN grubu — ilk 6 + son 4 görünür
+        return in_array($normalized, [
+            'cardnumber', 'cardno', 'pan', 'number', 'ccno', 'cc_no',
+            'creditcard', 'cardno', 'kartno', 'pan_',
+        ], true);
+    }
+
+    private static function redactValue(string $key, mixed $value): string
+    {
+        if (! is_scalar($value)) {
+            return '***';
+        }
+        $str = (string) $value;
+        $normalized = strtolower(str_replace(['_', '-'], '', $key));
+        if (in_array($normalized, ['cvv', 'cvc', 'cv2', 'cvv2', 'cvv2val', 'cvcnumber'], true)) {
+            return self::redactCvv($str);
+        }
+
+        return self::maskPan($str);
+    }
+
+    /**
+     * String body içinde 12-19 hane PAN ve form-urlencoded CVV gibi pattern'leri yakalar.
+     * XML/JSON gövdelerde kullanılır.
+     */
+    private static function redactString(string $body): string
+    {
+        // 12-19 hane standalone numerik → muhtemelen PAN
+        $body = preg_replace_callback(
+            '/\b\d{12,19}\b/',
+            static fn ($m) => self::maskPan($m[0]),
+            $body
+        ) ?? $body;
+
+        return $body;
+    }
 }

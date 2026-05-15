@@ -62,3 +62,51 @@ it('AbstractGateway opsiyonel PSR-3 logger kabul eder', function () {
     // setLogger akışkan döner
     expect($gw->setLogger($logger))->toBe($gw);
 });
+
+it('redactPayload array içindeki yaygın kart field adlarını maskeler', function () {
+    // Garanti
+    $garanti = ['Number' => '5454545454545454', 'CVV2' => '123', 'Amount' => '100'];
+    $r = CardDataRedactor::redactPayload($garanti);
+    expect($r['Number'])->toBe('545454******5454');
+    expect($r['CVV2'])->toBe('***');
+    expect($r['Amount'])->toBe('100');
+
+    // NestPay
+    $nestpay = ['pan' => '4022780520669303', 'cv2' => '988'];
+    $r = CardDataRedactor::redactPayload($nestpay);
+    expect($r['pan'])->toBe('402278******9303');
+    expect($r['cv2'])->toBe('***');
+
+    // Akbank
+    $akbank = ['creditCard' => '5454545454545454', 'cvv' => '123'];
+    $r = CardDataRedactor::redactPayload($akbank);
+    expect($r['creditCard'])->toBe('545454******5454');
+    expect($r['cvv'])->toBe('***');
+
+    // CCPayment / Sipay
+    $sipay = ['cc_no' => '5454545454545454', 'cvc' => '123', 'cc_holder_name' => 'John Doe'];
+    $r = CardDataRedactor::redactPayload($sipay);
+    expect($r['cc_no'])->toBe('545454******5454');
+    expect($r['cvc'])->toBe('***');
+    expect($r['cc_holder_name'])->toBe('John Doe'); // holder name maskelenmez
+});
+
+it('redactPayload iç içe array yapılarını recursive maskeler', function () {
+    $payload = [
+        'Terminal' => ['ID' => 'TID', 'HashData' => 'abc'],
+        'Card' => ['Number' => '5454545454545454', 'CVV2' => '999'],
+        'Transaction' => ['Amount' => '150'],
+    ];
+
+    $r = CardDataRedactor::redactPayload($payload);
+    expect($r['Card']['Number'])->toBe('545454******5454');
+    expect($r['Card']['CVV2'])->toBe('***');
+    expect($r['Terminal']['ID'])->toBe('TID'); // ID maskelenmez
+});
+
+it('redactPayload string body (XML/JSON) içinde 12-19 hane PAN pattern\'ini bulup maskeler', function () {
+    $xml = '<Card><Number>5454545454545454</Number></Card>';
+    $r = CardDataRedactor::redactPayload($xml);
+    expect($r)->toContain('545454******5454');
+    expect($r)->not->toContain('5454545454545454');
+});

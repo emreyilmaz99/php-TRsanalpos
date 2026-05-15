@@ -15,6 +15,12 @@ class SaleRequest
         public ?CustomerInfo $invoice_info = null,
         public ?CustomerInfo $shipping_info = null,
         public ?Payment3DConfig $payment_3d = null,
+        /**
+         * Opsiyonel idempotency anahtarı. Aynı anahtarla TTL içinde ikinci kez sale()
+         * çağrılırsa DuplicateRequestException fırlatılır, banka'ya istek gitmez.
+         * Belirtilmezse idempotency uygulanmaz.
+         */
+        public ?string $idempotency_key = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,6 +32,7 @@ class SaleRequest
             invoice_info: isset($data['invoice_info']) ? CustomerInfo::fromArray($data['invoice_info']) : null,
             shipping_info: isset($data['shipping_info']) ? CustomerInfo::fromArray($data['shipping_info']) : null,
             payment_3d: isset($data['payment_3d']) ? Payment3DConfig::fromArray($data['payment_3d']) : null,
+            idempotency_key: $data['idempotency_key'] ?? null,
         );
     }
 

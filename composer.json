@@ -35,7 +35,8 @@
   },
   "require-dev": {
     "pestphp/pest": "^3.0",
-    "laravel/pint": "^1.27"
+    "laravel/pint": "^1.27",
+    "phpstan/phpstan": "^2.0"
   },
   "autoload": {
     "psr-4": {
@@ -62,8 +63,10 @@
   "scripts": {
     "test": "vendor/bin/pest --testdox",
     "test-coverage": "vendor/bin/pest --coverage-text",
+    "test-integration": "SANALPOS_LIVE=1 vendor/bin/pest --testsuite=Integration",
     "lint": "vendor/bin/pint",
-    "lint-test": "vendor/bin/pint --test"
+    "lint-test": "vendor/bin/pint --test",
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit=512M"
   },
   "config": {
     "allow-plugins": {

@@ -23,6 +23,7 @@ class HostedPaymentRequest
         public string $fail_url = '',
         public string $language = 'tr',
         public bool $is_desktop = true,
+        public ?string $idempotency_key = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -37,6 +38,7 @@ class HostedPaymentRequest
             fail_url: $data['fail_url'] ?? '',
             language: $data['language'] ?? 'tr',
             is_desktop: (bool) ($data['is_desktop'] ?? true),
+            idempotency_key: $data['idempotency_key'] ?? null,
         );
     }
 

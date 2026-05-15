@@ -23,12 +23,45 @@ use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
+use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
+use EvrenOnur\SanalPos\Events\EventDispatcher;
+use EvrenOnur\SanalPos\Events\PaymentFailed;
+use EvrenOnur\SanalPos\Events\PaymentInitiated;
+use EvrenOnur\SanalPos\Events\PaymentSucceeded;
+use EvrenOnur\SanalPos\Exceptions\DuplicateRequestException;
 use EvrenOnur\SanalPos\Services\BankService;
+use EvrenOnur\SanalPos\Support\IdempotencyStore;
+use EvrenOnur\SanalPos\Support\InMemoryIdempotencyStore;
+use EvrenOnur\SanalPos\Support\LaravelCacheIdempotencyStore;
 use EvrenOnur\SanalPos\Support\StringHelper;
 use EvrenOnur\SanalPos\Support\ValidationHelper;
 
 class SanalPosClient
 {
+    private static ?IdempotencyStore $idempotencyStore = null;
+
+    /**
+     * Idempotency store inject etmek için. Verilmezse Laravel cache (varsa) veya
+     * InMemory store otomatik kullanılır.
+     */
+    public static function setIdempotencyStore(?IdempotencyStore $store): void
+    {
+        self::$idempotencyStore = $store;
+    }
+
+    public static function idempotencyStore(): IdempotencyStore
+    {
+        if (self::$idempotencyStore !== null) {
+            return self::$idempotencyStore;
+        }
+
+        if (function_exists('cache')) {
+            return self::$idempotencyStore = new LaravelCacheIdempotencyStore;
+        }
+
+        return self::$idempotencyStore = new InMemoryIdempotencyStore;
+    }
+
     /**
      * Karttan çekim yapmak için kullanılır.
      * 3D çekim yapmak için payment_3d->confirm = true gönderilmelidir.
@@ -38,14 +71,24 @@ class SanalPosClient
         ValidationHelper::validateSaleRequest($request);
         ValidationHelper::validateAuth($auth);
 
+        // Idempotency guard — anahtar verilmişse aynı anahtarla tekrar atılırsa fırlat
+        if ($request->idempotency_key !== null && self::idempotencyStore()->seen('sale:' . $request->idempotency_key)) {
+            throw new DuplicateRequestException($request->idempotency_key);
+        }
+
         // Adres sanitizasyonu
         $request->invoice_info = ValidationHelper::sanitizeCustomerInfo($request->invoice_info);
         $request->shipping_info = ValidationHelper::sanitizeCustomerInfo($request->shipping_info);
         $request->sale_info->card_name_surname = StringHelper::clearString($request->sale_info->card_name_surname);
 
-        $gateway = self::getGateway($auth->bank_code);
+        EventDispatcher::dispatch(new PaymentInitiated($auth->bank_code, $request->order_number, $auth, ['flow' => 'sale']));
 
-        return $gateway->sale($request, $auth);
+        $gateway = self::getGateway($auth->bank_code);
+        $response = $gateway->sale($request, $auth);
+
+        self::dispatchPaymentOutcome($auth, $request->order_number, $response, 'sale');
+
+        return $response;
     }
 
     /**
@@ -65,8 +108,11 @@ class SanalPosClient
         }
 
         $gateway = self::getGateway($auth->bank_code);
+        $response = $gateway->sale3DResponse($request, $auth);
 
-        return $gateway->sale3DResponse($request, $auth);
+        self::dispatchPaymentOutcome($auth, $response->order_number, $response, 'sale3DResponse');
+
+        return $response;
     }
 
     /**
@@ -158,8 +204,14 @@ class SanalPosClient
             throw new \InvalidArgumentException(implode(' ', $errors));
         }
 
+        if ($request->idempotency_key !== null && self::idempotencyStore()->seen('hosted:' . $request->idempotency_key)) {
+            throw new DuplicateRequestException($request->idempotency_key);
+        }
+
         $request->invoice_info = ValidationHelper::sanitizeCustomerInfo($request->invoice_info);
         $request->shipping_info = ValidationHelper::sanitizeCustomerInfo($request->shipping_info);
+
+        EventDispatcher::dispatch(new PaymentInitiated($auth->bank_code, $request->order_number, $auth, ['flow' => 'hosted']));
 
         $gateway = self::getGateway($auth->bank_code);
 
@@ -174,8 +226,37 @@ class SanalPosClient
         ValidationHelper::validateAuth($auth);
 
         $gateway = self::getGateway($auth->bank_code);
+        $response = $gateway->resolveHostedPayment($callback, $auth);
 
-        return $gateway->resolveHostedPayment($callback, $auth);
+        self::dispatchPaymentOutcome($auth, $response->order_number, $response, 'hosted_callback');
+
+        return $response;
+    }
+
+    /**
+     * Sale akışı sonrası uygun event'i dispatch eder (success / failure).
+     */
+    private static function dispatchPaymentOutcome(MerchantAuth $auth, string $orderNumber, SaleResponse $response, string $flow): void
+    {
+        if ($response->status === SaleResponseStatus::Success) {
+            EventDispatcher::dispatch(new PaymentSucceeded(
+                $auth->bank_code,
+                $orderNumber,
+                $response->transaction_id,
+                $auth,
+                ['flow' => $flow],
+            ));
+        } elseif ($response->status === SaleResponseStatus::Error) {
+            EventDispatcher::dispatch(new PaymentFailed(
+                $auth->bank_code,
+                $orderNumber,
+                $response->message,
+                null,
+                $auth,
+                ['flow' => $flow],
+            ));
+        }
+        // RedirectHTML / RedirectURL durumları henüz outcome değil — async tamamlanır.
     }
 
     /**

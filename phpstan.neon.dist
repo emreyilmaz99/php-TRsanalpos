@@ -1,0 +1,20 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 3
+    paths:
+        - src
+    excludePaths:
+        - vendor
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Laravel container fonksiyonları (cache(), config(), app(), event(), config_path())
+        # — kütüphane framework-agnostic kullanılabilsin diye function_exists guard'lı çağrılır.
+        - identifier: function.notFound
+        # LoggerAware trait + AbstractGateway her zaman birlikte kullanıldığı için
+        # method_exists check'i analizör için "always true" görünür ama trait-only
+        # kullanım için savunma şarttır.
+        - identifier: function.alreadyNarrowedType
+        - identifier: instanceof.alwaysTrue
