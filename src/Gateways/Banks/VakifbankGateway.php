@@ -2,12 +2,17 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Banks;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\ResponseStatus;
@@ -15,7 +20,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class VakifbankGateway extends AbstractGateway
+class VakifbankGateway extends AbstractGateway implements SupportsHostedPayment, SupportsRefund
 {
     private string $urlAPITest = 'https://onlineodemetest.vakifbank.com.tr:4443/VposService/v3/Vposreq.aspx';
 
@@ -24,6 +29,15 @@ class VakifbankGateway extends AbstractGateway
     private string $url3DTest = 'https://3dsecuretest.vakifbank.com.tr:4443/MPIAPI/MPI_Enrollment.aspx';
 
     private string $url3DLive = 'https://3dsecure.vakifbank.com.tr:4443/MPIAPI/MPI_Enrollment.aspx';
+
+    // Common Payment (Ortak Ödeme) — gerçek hosted akış, kart Vakıfbank sayfasında
+    private string $urlCPRegisterTest = 'https://cptest.vakifbank.com.tr/CommonPayment/api/RegisterTransaction';
+
+    private string $urlCPRegisterLive = 'https://cpweb.vakifbank.com.tr/CommonPayment/api/RegisterTransaction';
+
+    private string $urlCPQueryTest = 'https://cptest.vakifbank.com.tr/CommonPayment/api/VposTransaction';
+
+    private string $urlCPQueryLive = 'https://cpweb.vakifbank.com.tr/CommonPayment/api/VposTransaction';
 
     public function sale(SaleRequest $request, MerchantAuth $auth): SaleResponse
     {
@@ -261,6 +275,134 @@ class VakifbankGateway extends AbstractGateway
         } else {
             $response->message = $dic['ResultDetail'] ?? 'İşlem iade edilemedi';
         }
+
+        return $response;
+    }
+
+    // Hosted mode docs: Vakıfbank "Common Payment" (Ortak Ödeme) PayFlex CP V4.
+    // İki aşama: (1) RegisterTransaction → PaymentToken + CommonPaymentUrl,
+    //           (2) Müşteri GET ile {CommonPaymentUrl}?Ptkn={PaymentToken} adresine yönlendirilir.
+    // Hash recipe (mews/pos PayFlexCPV4Crypt::createHash referansı):
+    //   base64(sha1(HostMerchantId + AmountCode + Amount + MerchantPassword + '' + 'VBank3DPay2014'))
+    // MerchantAuth mapping: merchant_id=HostMerchantId, merchant_user=HostTerminalId,
+    //                       merchant_password=MerchantPassword.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+
+        $amount = StringHelper::formatAmount($request->sale_info->amount ?? 0);
+        $amountCode = (string) ($request->sale_info->currency?->value ?? 949);
+
+        $body = [
+            'HostMerchantId' => $auth->merchant_id,
+            'MerchantPassword' => $auth->merchant_password,
+            'HostTerminalId' => (string) $auth->getExtra('terminal_id', $auth->merchant_user),
+            'TransactionType' => 'Sale',
+            'AmountCode' => $amountCode,
+            'Amount' => $amount,
+            'OrderID' => $request->order_number,
+            'IsSecure' => 'true',
+            'AllowNotEnrolledCard' => 'false',
+            'SuccessUrl' => $request->success_url,
+            'FailUrl' => $request->fail_url,
+            'RequestLanguage' => strtolower($request->language ?: 'tr') === 'en' ? 'en-US' : 'tr-TR',
+            'Extract' => '',
+            'CustomItems' => '',
+        ];
+
+        if ($request->sale_info && $request->sale_info->installment > 1) {
+            $body['InstallmentCount'] = (string) $request->sale_info->installment;
+        }
+
+        // Hash: HostMerchantId + AmountCode + Amount + MerchantPassword + '' + 'VBank3DPay2014'
+        $body['HashedData'] = base64_encode(sha1(
+            $body['HostMerchantId'] . $body['AmountCode'] . $body['Amount'] . $body['MerchantPassword'] . '' . 'VBank3DPay2014',
+            true
+        ));
+
+        $registerUrl = $auth->test_platform ? $this->urlCPRegisterTest : $this->urlCPRegisterLive;
+        $resp = $this->httpPostForm($registerUrl, $body);
+
+        // Yanıt XML formatında gelir: <CommonPaymentRegistrationResponse>...</CommonPaymentRegistrationResponse>
+        $dic = StringHelper::xmlToDictionary($resp, 'CommonPaymentRegistrationResponse');
+        $response->private_response = $dic;
+
+        $paymentToken = $dic['PaymentToken'] ?? null;
+        $commonPaymentUrl = $dic['CommonPaymentUrl'] ?? null;
+        $errorCode = $dic['ErrorCode'] ?? null;
+
+        if (! empty($paymentToken) && ! empty($commonPaymentUrl) && empty($errorCode)) {
+            $response->status = ResponseStatus::Success;
+            $response->message = 'Hosted ödeme oturumu hazırlandı';
+            $response->redirect_method = 'GET';
+            $response->redirect_url = $commonPaymentUrl . '?Ptkn=' . urlencode($paymentToken);
+            $response->token = $paymentToken;
+        } else {
+            $response->status = ResponseStatus::Error;
+            $response->message = $dic['ResponseMessage'] ?? ($dic['ResponseInfo'] ?? 'Vakıfbank CP register başarısız');
+        }
+
+        return $response;
+    }
+
+    // Hosted callback: Vakıfbank müşteriyi success/fail URL'sine GET ile döner (Rc, AuthCode, Tid, vs.).
+    // Nihai durum için PaymentToken ile VposTransaction status query atılır.
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['OrderId'] ?? $payload['OrderID'] ?? $callback->order_number),
+            private_response: $payload,
+        );
+
+        // Vakıfbank CP başarı kodu '0000' (PROCEDURE_SUCCESS_CODE)
+        $rc = (string) ($payload['Rc'] ?? '');
+        if ($rc !== '' && $rc !== '0000') {
+            $response->message = $payload['ErrorMessage'] ?? ($payload['Message'] ?? "Hata kodu: $rc");
+
+            return $response;
+        }
+
+        // Final status query (opsiyonel — token ile kesin durum sorgulanır)
+        $token = $callback->token ?? ($payload['Ptkn'] ?? null);
+        if (! empty($token)) {
+            $statusBody = [
+                'HostMerchantId' => $auth->merchant_id,
+                'Password' => $auth->merchant_password,
+                'TransactionId' => '',
+                'PaymentToken' => $token,
+            ];
+            $statusUrl = $auth->test_platform ? $this->urlCPQueryTest : $this->urlCPQueryLive;
+            $statusResp = $this->httpPostForm($statusUrl, $statusBody);
+            $statusDic = StringHelper::xmlToDictionary($statusResp, 'VposTransactionResponse');
+            $response->private_response = ['callback' => $payload, 'status' => $statusDic];
+
+            if (($statusDic['ResultCode'] ?? '') === '0000') {
+                $response->status = SaleResponseStatus::Success;
+                $response->message = 'Ödeme başarılı';
+                $response->transaction_id = (string) ($statusDic['TransactionId'] ?? '');
+
+                return $response;
+            }
+
+            $response->message = $statusDic['ResultDetail'] ?? 'Durum sorgusu başarısız';
+
+            return $response;
+        }
+
+        // Token yoksa callback'in kendi alanlarını dene
+        $authCode = $payload['AuthCode'] ?? '';
+        if (! empty($authCode)) {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'Ödeme başarılı';
+            $response->transaction_id = (string) ($payload['Tid'] ?? $payload['TransactionId'] ?? $authCode);
+
+            return $response;
+        }
+
+        $response->message = 'Ödeme doğrulanamadı (token yok, AuthCode yok)';
 
         return $response;
     }

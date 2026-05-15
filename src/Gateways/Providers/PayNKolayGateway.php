@@ -2,16 +2,20 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
 use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\AllInstallment;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\CreditCardProgram;
@@ -21,7 +25,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class PayNKolayGateway extends AbstractGateway implements SupportsRefund
+class PayNKolayGateway extends AbstractGateway implements SupportsHostedPayment, SupportsRefund
 {
     private string $urlTest = 'https://paynkolaytest.nkolayislem.com.tr';
 
@@ -275,6 +279,83 @@ class PayNKolayGateway extends AbstractGateway implements SupportsRefund
             if (! empty($response->installment_list)) {
                 $response->confirm = true;
             }
+        }
+
+        return $response;
+    }
+
+    // Hosted mode: PayNKolay (N Kolay/Aktif Bank) "Vpos/Default.aspx" form-redirect akışı.
+    // Kart bilgisi N Kolay'ın hosted sayfasında alınır. Hash recipe sale3D ile aynı:
+    //   base64(sha512(merchant_id|order|amount|okUrl|failUrl|rnd|customerKey|merchant_password))
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+
+        $amount = StringHelper::formatAmount($request->sale_info->amount ?? 0);
+        $installment = ($request->sale_info && $request->sale_info->installment > 1)
+            ? $request->sale_info->installment
+            : 1;
+        $rnd = date('d.m.Y H:i:s');
+        $customerKey = $auth->merchant_storekey;
+
+        $hashData = implode('|', [
+            $auth->merchant_id,
+            $request->order_number,
+            $amount,
+            $request->success_url,
+            $request->fail_url,
+            $rnd,
+            $customerKey,
+            $auth->merchant_password,
+        ]);
+        $hash = base64_encode(hash('sha512', $hashData, true));
+
+        $params = [
+            'sx' => $auth->merchant_id,
+            'clientRefCode' => $request->order_number,
+            'amount' => $amount,
+            'currency' => StringHelper::getCurrencyCode($request->sale_info->currency ?? Currency::TRY),
+            'installmentCount' => (string) $installment,
+            'transactionType' => 'SALES',
+            'successUrl' => $request->success_url,
+            'failUrl' => $request->fail_url,
+            'customerKey' => $customerKey,
+            'rnd' => $rnd,
+            'hash' => $hash,
+            'use3D' => 'true',
+        ];
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme formu hazırlandı';
+        $response->redirect_method = 'POST';
+        $response->redirect_url = $this->getBaseUrl($auth) . '/Vpos/Default.aspx';
+        $response->form_fields = $params;
+
+        return $response;
+    }
+
+    // Hosted callback: N Kolay başarılı işlemde RESPONSE_CODE=2 + AUTH_CODE + REFERENCE_CODE döner.
+    // RESPONSE_HASH varsa doğrulanır (success_url ve fail_url'i bilen başkası taklit edemez).
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['CLIENT_REFERENCE_CODE'] ?? $payload['clientRefCode'] ?? $callback->order_number),
+            private_response: $payload,
+        );
+
+        $responseCode = (int) ($payload['RESPONSE_CODE'] ?? 0);
+        $authCode = (string) ($payload['AUTH_CODE'] ?? '0');
+        $referenceCode = (string) ($payload['REFERENCE_CODE'] ?? '');
+
+        if ($responseCode === 2 && ! empty($authCode) && $authCode !== '0' && ! empty($referenceCode)) {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'Ödeme başarılı';
+            $response->transaction_id = $referenceCode;
+        } else {
+            $response->message = $payload['RESPONSE_MSG'] ?? '3D doğrulaması başarısız';
         }
 
         return $response;

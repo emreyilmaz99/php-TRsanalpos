@@ -2,21 +2,28 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Banks;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
+use EvrenOnur\SanalPos\Enums\ResponseStatus;
 use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class VakifKatilimGateway extends AbstractGateway
+class VakifKatilimGateway extends AbstractGateway implements SupportsHostedPayment
 {
     private string $urlNon3DLive = 'https://boa.vakifkatilim.com.tr/VirtualPOS.Gateway/Home/Non3DPayGate';
 
     private string $url3DLive = 'https://boa.vakifkatilim.com.tr/VirtualPOS.Gateway/Home/ThreeDModelPayGate';
 
     private string $url3DProvisionLive = 'https://boa.vakifkatilim.com.tr/VirtualPOS.Gateway/Home/ThreeDModelProvisionGate';
+
+    private string $urlCommonPaymentPage = 'https://boa.vakifkatilim.com.tr/VirtualPOS.Gateway/CommonPaymentPage/CommonPaymentPage';
 
     public function sale(SaleRequest $request, MerchantAuth $auth): SaleResponse
     {
@@ -216,6 +223,66 @@ XML;
         } else {
             $response->status = SaleResponseStatus::Error;
             $response->message = $provDic['ResponseMessage'] ?? 'İşlem sırasında bir hata oluştu';
+        }
+
+        return $response;
+    }
+
+    // Hosted mode docs: Vakıf Katılım "CommonPaymentPage" (3D_HOST) — kart bankada.
+    // mews/pos VakifKatilimPosRequestDataMapper referansı: form POST, HashPassword =
+    // sha1Base64(StoreKey), PaymentType='1'. HashData yok bu modda.
+    // MerchantAuth mapping: merchant_id=MerchantId, merchant_user=UserName,
+    //                       merchant_storekey=StoreKey.
+    public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        $response = new HostedPaymentResponse(order_number: $request->order_number);
+
+        $amount = StringHelper::toKurus($request->sale_info->amount ?? 0);
+        $currencyCode = str_pad((string) ($request->sale_info->currency?->value ?? 949), 4, '0', STR_PAD_LEFT);
+        $hashPassword = StringHelper::sha1Base64($auth->merchant_storekey);
+
+        $inputs = [
+            'UserName' => $auth->merchant_user,
+            'HashPassword' => $hashPassword,
+            'MerchantId' => $auth->merchant_id,
+            'MerchantOrderId' => $request->order_number,
+            'Amount' => $amount,
+            'FECCurrencyCode' => $currencyCode,
+            'OkUrl' => $request->success_url,
+            'FailUrl' => $request->fail_url,
+            'PaymentType' => '1',
+        ];
+
+        $response->status = ResponseStatus::Success;
+        $response->message = 'Hosted ödeme formu hazırlandı';
+        $response->redirect_method = 'POST';
+        $response->redirect_url = $this->urlCommonPaymentPage;
+        $response->form_fields = $inputs;
+
+        return $response;
+    }
+
+    // Hosted callback: Vakıf Katılım success/fail URL'ye XML body POST eder.
+    // Başarı: ResponseCode='00' + AuthCode + ProvisionNumber.
+    public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        $payload = $callback->payload;
+
+        $response = new SaleResponse(
+            status: SaleResponseStatus::Error,
+            order_number: (string) ($payload['MerchantOrderId'] ?? $callback->order_number),
+            private_response: $payload,
+        );
+
+        $responseCode = (string) ($payload['ResponseCode'] ?? '');
+        $authCode = (string) ($payload['AuthCode'] ?? '');
+
+        if ($responseCode === '00' && ! empty($authCode)) {
+            $response->status = SaleResponseStatus::Success;
+            $response->message = 'Ödeme başarılı';
+            $response->transaction_id = (string) ($payload['ProvisionNumber'] ?? $payload['OrderId'] ?? $authCode);
+        } else {
+            $response->message = $payload['ResponseMessage'] ?? "Ödeme başarısız (kod: $responseCode)";
         }
 
         return $response;
