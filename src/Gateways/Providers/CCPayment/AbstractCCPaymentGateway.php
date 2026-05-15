@@ -2,6 +2,7 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers\CCPayment;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
 use EvrenOnur\SanalPos\DTOs\AllInstallment;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
@@ -32,7 +33,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Support\MakesHttpRequests;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-abstract class AbstractCCPaymentGateway implements VirtualPOSServiceInterface
+abstract class AbstractCCPaymentGateway implements SupportsRefund, VirtualPOSServiceInterface
 {
     use MakesHttpRequests;
 

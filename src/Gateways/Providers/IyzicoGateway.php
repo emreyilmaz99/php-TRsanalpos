@@ -2,6 +2,8 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
@@ -37,7 +39,7 @@ use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\RetrieveInstallmentInfoRequ
 /**
  * Iyzico sanal POS gateway implementasyonu.
  */
-class IyzicoGateway extends AbstractGateway
+class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, SupportsRefund
 {
     private string $urlAPITest = 'https://sandbox-api.iyzipay.com';
 

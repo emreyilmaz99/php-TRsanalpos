@@ -2,6 +2,7 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
@@ -19,7 +20,7 @@ use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 use EvrenOnur\SanalPos\Support\XmlHelper;
 
-class ParamPosGateway extends AbstractGateway
+class ParamPosGateway extends AbstractGateway implements SupportsRefund
 {
     private string $urlTest = 'https://testposws.param.com.tr/turkpos.ws/service_turkpos_prod.asmx';
 

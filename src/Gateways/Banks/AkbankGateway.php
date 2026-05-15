@@ -2,6 +2,8 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Banks;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
@@ -19,7 +21,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class AkbankGateway extends AbstractGateway
+class AkbankGateway extends AbstractGateway implements SupportsHostedPayment, SupportsRefund
 {
     private string $urlAPITest = 'https://apipre.akbank.com/api/v1/payment/virtualpos/transaction/process';
 

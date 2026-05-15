@@ -2,6 +2,7 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\AllInstallment;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
@@ -20,7 +21,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class PayNKolayGateway extends AbstractGateway
+class PayNKolayGateway extends AbstractGateway implements SupportsRefund
 {
     private string $urlTest = 'https://paynkolaytest.nkolayislem.com.tr';
 

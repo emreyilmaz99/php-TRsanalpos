@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static \EvrenOnur\SanalPos\DTOs\Responses\CancelResponse cancel(\EvrenOnur\SanalPos\DTOs\Requests\CancelRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
  * @method static \EvrenOnur\SanalPos\DTOs\Responses\RefundResponse refund(\EvrenOnur\SanalPos\DTOs\Requests\RefundRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
  * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse saleQuery(\EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse initializeHostedPayment(\EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleResponse resolveHostedPayment(\EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback $callback, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
  * @method static array allBankList(?callable $filter = null)
  *
  * @see SanalPosClient

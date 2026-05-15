@@ -23,6 +23,7 @@ use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
 use EvrenOnur\SanalPos\Enums\ResponseStatus;
 use EvrenOnur\SanalPos\Enums\SaleQueryResponseStatus;
 use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
+use EvrenOnur\SanalPos\Support\LoggerAware;
 use EvrenOnur\SanalPos\Support\MakesHttpRequests;
 
 /**
@@ -33,6 +34,7 @@ use EvrenOnur\SanalPos\Support\MakesHttpRequests;
  */
 abstract class AbstractGateway implements VirtualPOSServiceInterface
 {
+    use LoggerAware;
     use MakesHttpRequests;
 
     public function cancel(CancelRequest $request, MerchantAuth $auth): CancelResponse

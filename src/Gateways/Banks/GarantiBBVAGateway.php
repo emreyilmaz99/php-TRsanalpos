@@ -2,19 +2,26 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Banks;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
+use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
 use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
+use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
+use EvrenOnur\SanalPos\Enums\Currency;
 use EvrenOnur\SanalPos\Enums\ResponseStatus;
 use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class GarantiBBVAGateway extends AbstractGateway
+class GarantiBBVAGateway extends AbstractGateway implements SupportsHostedPayment, SupportsRefund
 {
     private string $urlAPITest = 'https://sanalposprovtest.garantibbva.com.tr/VPServlet';
 
@@ -271,6 +278,132 @@ class GarantiBBVAGateway extends AbstractGateway
         );
     }
 
+    public function cancel(CancelRequest $request, MerchantAuth $auth): CancelResponse
+    {
+        // Garanti GVPS "void" — aynı gün/uzlaşma öncesi iptal.
+        // Amount sıfır gönderiliyor (tam iptal), CurrencyCode opsiyonel ama göndermek güvenli.
+        $currency = $request->currency ?? Currency::TRY;
+        $amount = '0';
+
+        $hashedPassword = strtoupper($this->getSHA1(
+            $auth->merchant_password . str_pad((string) ((int) $auth->merchant_user), 9, '0', STR_PAD_LEFT)
+        ));
+        $hash = strtoupper($this->getSHA1(
+            $request->order_number . $auth->merchant_user . $amount . $hashedPassword
+        ));
+
+        $param = [
+            'Mode' => $auth->test_platform ? 'TEST' : 'PROD',
+            'Version' => 'v0.00',
+            'Terminal' => [
+                'ProvUserID' => 'PROVRFN',
+                'HashData' => $hash,
+                'MerchantID' => $auth->merchant_id,
+                'UserID' => 'PROVRFN',
+                'ID' => $auth->merchant_user,
+            ],
+            'Customer' => [
+                'IPAddress' => $request->customer_ip_address ?: '127.0.0.1',
+                'EmailAddress' => '',
+            ],
+            'Order' => ['OrderID' => $request->order_number, 'GroupID' => ''],
+            'Transaction' => [
+                'Type' => 'void',
+                'Amount' => $amount,
+                'CurrencyCode' => (string) $currency->value,
+                'CardholderPresentCode' => '0',
+                'MotoInd' => 'N',
+                'OriginalRetrefNum' => $request->transaction_id,
+            ],
+        ];
+
+        $xml = StringHelper::toXml($param, 'GVPSRequest', 'utf-8');
+        $resp = $this->httpPostRaw(
+            $auth->test_platform ? $this->urlAPITest : $this->urlAPILive,
+            $xml,
+            ['Content-Type' => 'application/x-www-form-urlencoded']
+        );
+        $dic = StringHelper::xmlToDictionary($resp, 'GVPSResponse');
+
+        $code = $dic['Transaction']['Response']['Code'] ?? '';
+        if ($code === '00') {
+            return new CancelResponse(
+                status: ResponseStatus::Success,
+                message: 'İptal işlemi başarılı',
+                private_response: $dic,
+            );
+        }
+
+        return new CancelResponse(
+            status: ResponseStatus::Error,
+            message: $dic['Transaction']['Response']['ErrorMsg'] ?? 'İptal işlemi başarısız',
+            private_response: $dic,
+        );
+    }
+
+    public function refund(RefundRequest $request, MerchantAuth $auth): RefundResponse
+    {
+        // Garanti GVPS "refund" — uzlaşma sonrası iade. Aynı gün için cancel() kullanın.
+        $currency = $request->currency ?? Currency::TRY;
+        $amount = StringHelper::toKurus($request->refund_amount);
+
+        $hashedPassword = strtoupper($this->getSHA1(
+            $auth->merchant_password . str_pad((string) ((int) $auth->merchant_user), 9, '0', STR_PAD_LEFT)
+        ));
+        $hash = strtoupper($this->getSHA1(
+            $request->order_number . $auth->merchant_user . $amount . $hashedPassword
+        ));
+
+        $param = [
+            'Mode' => $auth->test_platform ? 'TEST' : 'PROD',
+            'Version' => 'v0.00',
+            'Terminal' => [
+                'ProvUserID' => 'PROVRFN',
+                'HashData' => $hash,
+                'MerchantID' => $auth->merchant_id,
+                'UserID' => 'PROVRFN',
+                'ID' => $auth->merchant_user,
+            ],
+            'Customer' => [
+                'IPAddress' => $request->customer_ip_address ?: '127.0.0.1',
+                'EmailAddress' => '',
+            ],
+            'Order' => ['OrderID' => $request->order_number, 'GroupID' => ''],
+            'Transaction' => [
+                'Type' => 'refund',
+                'Amount' => $amount,
+                'CurrencyCode' => (string) $currency->value,
+                'CardholderPresentCode' => '0',
+                'MotoInd' => 'N',
+                'OriginalRetrefNum' => $request->transaction_id,
+            ],
+        ];
+
+        $xml = StringHelper::toXml($param, 'GVPSRequest', 'utf-8');
+        $resp = $this->httpPostRaw(
+            $auth->test_platform ? $this->urlAPITest : $this->urlAPILive,
+            $xml,
+            ['Content-Type' => 'application/x-www-form-urlencoded']
+        );
+        $dic = StringHelper::xmlToDictionary($resp, 'GVPSResponse');
+
+        $code = $dic['Transaction']['Response']['Code'] ?? '';
+        if ($code === '00') {
+            return new RefundResponse(
+                status: ResponseStatus::Success,
+                message: 'İade işlemi başarılı',
+                refund_amount: $request->refund_amount,
+                private_response: $dic,
+            );
+        }
+
+        return new RefundResponse(
+            status: ResponseStatus::Error,
+            message: $dic['Transaction']['Response']['ErrorMsg'] ?? 'İade işlemi başarısız',
+            private_response: $dic,
+        );
+    }
+
     // Hosted mode docs: Garanti BBVA "Güvenli Ortak Ödeme Sayfası" (3D_OOS_PAY)
     // — kart bilgisi Garanti tarafında girilir. Hash SHA512 (apiversion=512).
     // Resmi dok: https://dev.garantibbva.com.tr/sanal-pos-ortak-odeme-pesin
@@ -413,6 +546,32 @@ class GarantiBBVAGateway extends AbstractGateway
     }
 
     // --- Private helpers ---
+
+    /**
+     * Garanti'de TerminalID ayrı bir alan. $auth->extra['terminal_id'] varsa onu kullan,
+     * yoksa merchant_user'a fallback (backward compat).
+     */
+    private function terminalId(MerchantAuth $auth): string
+    {
+        return (string) $auth->getExtra('terminal_id', $auth->merchant_user);
+    }
+
+    /**
+     * Provisioning user (PROVAUT veya hesap-spesifik). $auth->extra['prov_user_id']'den
+     * okur, default 'PROVAUT'.
+     */
+    private function provUserId(MerchantAuth $auth): string
+    {
+        return (string) $auth->getExtra('prov_user_id', 'PROVAUT');
+    }
+
+    /**
+     * Refund provisioning user. Default 'PROVRFN'.
+     */
+    private function refundProvUserId(MerchantAuth $auth): string
+    {
+        return (string) $auth->getExtra('refund_prov_user_id', 'PROVRFN');
+    }
 
     private function getSHA1(string $data): string
     {

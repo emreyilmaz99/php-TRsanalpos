@@ -2,6 +2,7 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
@@ -15,7 +16,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class AhlpayGateway extends AbstractGateway
+class AhlpayGateway extends AbstractGateway implements SupportsRefund
 {
     private string $urlTest = 'https://testahlsanalpos.ahlpay.com.tr';
 

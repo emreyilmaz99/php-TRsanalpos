@@ -2,6 +2,9 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Banks\Nestpay;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsSaleQuery;
 use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
@@ -29,7 +32,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Support\MakesHttpRequests;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-abstract class AbstractNestpayGateway implements VirtualPOSServiceInterface
+abstract class AbstractNestpayGateway implements SupportsHostedPayment, SupportsRefund, SupportsSaleQuery, VirtualPOSServiceInterface
 {
     use MakesHttpRequests;
 
@@ -304,7 +307,7 @@ abstract class AbstractNestpayGateway implements VirtualPOSServiceInterface
             'oid' => $request->order_number,
             'okUrl' => $request->success_url,
             'failUrl' => $request->fail_url,
-            'rnd' => (string) (int) (microtime(true) * 1000),
+            'rnd' => bin2hex(random_bytes(16)),
             'storetype' => '3d_pay_hosting',
             'lang' => $request->language ?: 'tr',
             'currency' => (string) ($request->sale_info->currency?->value ?? 949),
@@ -399,7 +402,7 @@ abstract class AbstractNestpayGateway implements VirtualPOSServiceInterface
             'oid' => $request->order_number,
             'okUrl' => $request->payment_3d->return_url,
             'failUrl' => $request->payment_3d->return_url,
-            'rnd' => (string) (int) (microtime(true) * 1000),
+            'rnd' => bin2hex(random_bytes(16)),
             'storetype' => '3d',
             'lang' => 'tr',
             'currency' => (string) $request->sale_info->currency->value,

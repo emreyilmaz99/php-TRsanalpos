@@ -42,46 +42,51 @@ php artisan vendor:publish --provider="EvrenOnur\SanalPos\SanalPosServiceProvide
 
 ## Kullanılabilir Sanal POS'lar
 
-| Sanal POS | Satış | Satış 3D | İptal | İade |
-| --------- | :---: | :------: | :---: | :---: |
-| Paynet | ✔️ | ✔️ | ✔️ | ✔️ |
-| Akbank | ✔️ | ✔️ | ✔️ | ✔️ |
-| Akbank Nestpay | ✔️ | ✔️ | ✔️ | ✔️ |
-| Alternatif Bank | ✔️ | ✔️ | ✔️ | ✔️ |
-| Anadolubank | ✔️ | ✔️ | ✔️ | ✔️ |
-| Denizbank | ✔️ | ✔️ | ✔️ | ✔️ |
-| QNB Finansbank | ✔️ | ✔️ | ✔️ | ✔️ |
-| Finansbank Nestpay | ✔️ | ✔️ | ✔️ | ✔️ |
-| Garanti BBVA | ✔️ | ✔️ | ❌ | ❌ |
-| Halkbank | ✔️ | ✔️ | ✔️ | ✔️ |
-| ING Bank | ✔️ | ✔️ | ✔️ | ✔️ |
-| İş Bankası | ✔️ | ✔️ | ✔️ | ✔️ |
-| Şekerbank | ✔️ | ✔️ | ✔️ | ✔️ |
-| Türk Ekonomi Bankası | ✔️ | ✔️ | ✔️ | ✔️ |
-| Türkiye Finans | ✔️ | ✔️ | ✔️ | ✔️ |
-| Vakıfbank | ✔️ | ✔️ | ✔️ | ✔️ |
-| Yapı Kredi Bankası | ✔️ | ✔️ | ❌ | ❌ |
-| Ziraat Bankası | ✔️ | ✔️ | ✔️ | ✔️ |
-| Kuveyt Türk | ✔️ | ✔️ | ❌ | ❌ |
-| Vakıf Katılım | ✔️ | ✔️ | ❌ | ❌ |
-| Cardplus | ✔️ | ✔️ | ✔️ | ✔️ |
-| Paratika | ✔️ | ✔️ | ✔️ | ✔️ |
-| Payten (MSU) | ✔️ | ✔️ | ✔️ | ✔️ |
-| ZiraatPay | ✔️ | ✔️ | ✔️ | ✔️ |
-| VakıfPayS | ✔️ | ✔️ | ✔️ | ✔️ |
-| Iyzico | ✔️ | ✔️ | ✔️ | ✔️ |
-| Sipay | ✔️ | ✔️ | ✔️ | ✔️ |
-| QNBpay | ✔️ | ✔️ | ✔️ | ✔️ |
-| ParamPos | ✔️ | ✔️ | ✔️ | ✔️ |
-| PayBull | ✔️ | ✔️ | ✔️ | ✔️ |
-| Parolapara | ✔️ | ✔️ | ✔️ | ✔️ |
-| IQmoney | ✔️ | ✔️ | ✔️ | ✔️ |
-| Ahlpay | ✔️ | ✔️ | ✔️ | ✔️ |
-| Moka | ✔️ | ✔️ | ✔️ | ✔️ |
-| Vepara | ✔️ | ✔️ | ✔️ | ✔️ |
-| Tami | ✔️ | ✔️ | ✔️ | ✔️ |
-| HalkÖde | ✔️ | ✔️ | ✔️ | ✔️ |
-| PayNKolay | ✔️ | ✔️ | ✔️ | ✔️ |
+> **Hosted (banka barındırmalı)** sütunu, müşterinin kart bilgisini **bankanın kendi sayfasında** girdiği akışı belirtir (PCI-DSS SAQ-A uyumu).
+> **⚠️** işareti, gateway override edilmiş ancak içeriğin henüz tam doğrulanmadığını gösterir (CCPayment ailesi için doc'a göre flow yazıldı, sandbox doğrulaması bekliyor).
+
+| Sanal POS | Satış | Satış 3D | İptal | İade | Hosted |
+| --------- | :---: | :------: | :---: | :---: | :----: |
+| Paynet | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+| Akbank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Akbank Nestpay | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Alternatif Bank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Anadolubank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Denizbank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| QNB Finansbank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Finansbank Nestpay | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Garanti BBVA | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Halkbank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| ING Bank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| İş Bankası | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Şekerbank | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Türk Ekonomi Bankası | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Türkiye Finans | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Vakıfbank | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+| Yapı Kredi Bankası | ✔️ | ✔️ | ❌ | ❌ | ❌ |
+| Ziraat Bankası | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Kuveyt Türk | ✔️ | ✔️ | ❌ | ❌ | ❌ |
+| Vakıf Katılım | ✔️ | ✔️ | ❌ | ❌ | ❌ |
+| Cardplus | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Paratika | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Payten (MSU) | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| ZiraatPay | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| VakıfPayS | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Iyzico | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
+| Sipay | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| QNBpay | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| ParamPos | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+| PayBull | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| Parolapara | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| IQmoney | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| Ahlpay | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+| Moka | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+| Vepara | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| Tami | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+| HalkÖde | ✔️ | ✔️ | ✔️ | ✔️ | ⚠️ |
+| PayNKolay | ✔️ | ✔️ | ✔️ | ✔️ | ❌ |
+
+> Capability matrisini otomatik üretmek için: `php tools/capability-matrix.php`
 
 ## API Bilgilerinin Ayarlanması - `MerchantAuth`
 

@@ -3,8 +3,10 @@
 namespace EvrenOnur\SanalPos\DTOs;
 
 use EvrenOnur\SanalPos\Enums\Currency;
+use EvrenOnur\SanalPos\Support\CardDataRedactor;
+use JsonSerializable;
 
-class SaleInfo
+class SaleInfo implements JsonSerializable
 {
     public function __construct(
         public string $card_name_surname = '',
@@ -71,5 +73,41 @@ class SaleInfo
         }
 
         return $errors;
+    }
+
+    /**
+     * var_dump/print_r/Laravel dump çıktısında kart numarası ve CVV maskelenir.
+     */
+    public function __debugInfo(): array
+    {
+        return $this->redactedSnapshot();
+    }
+
+    /**
+     * json_encode($saleInfo) çağrıldığında kart bilgisi serialize edilmez.
+     * Gateway'ler ham kart numarasına `$saleInfo->card_number` ile property üzerinden erişmeye devam eder.
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->redactedSnapshot();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function redactedSnapshot(): array
+    {
+        return [
+            'card_name_surname' => $this->card_name_surname,
+            'card_number' => CardDataRedactor::maskPan($this->card_number),
+            'card_expiry_month' => $this->card_expiry_month,
+            'card_expiry_year' => $this->card_expiry_year,
+            'card_cvv' => CardDataRedactor::redactCvv($this->card_cvv),
+            'currency' => $this->currency?->name,
+            'amount' => $this->amount,
+            'point' => $this->point,
+            'installment' => $this->installment,
+            'campaign_code' => $this->campaign_code,
+        ];
     }
 }

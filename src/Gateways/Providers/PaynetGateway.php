@@ -2,6 +2,7 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\DTOs\AllInstallment;
 use EvrenOnur\SanalPos\DTOs\Installment;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
@@ -22,7 +23,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Gateways\AbstractGateway;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-class PaynetGateway extends AbstractGateway
+class PaynetGateway extends AbstractGateway implements SupportsRefund
 {
     private string $urlTest = 'https://pts-api.paynet.com.tr';
 

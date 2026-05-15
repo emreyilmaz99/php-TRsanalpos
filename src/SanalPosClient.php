@@ -9,6 +9,8 @@ use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
@@ -17,6 +19,7 @@ use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
@@ -140,6 +143,39 @@ class SanalPosClient
         $gateway = self::getGateway($auth->bank_code);
 
         return $gateway->saleQuery($request, $auth);
+    }
+
+    /**
+     * Hosted (banka barındırmalı) ödeme akışı başlatır. Kart bilgisi gerektirmez;
+     * bankanın ödeme sayfasına yönlendirme/form üretir.
+     */
+    public static function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
+    {
+        ValidationHelper::validateAuth($auth);
+
+        $errors = $request->validate();
+        if (! empty($errors)) {
+            throw new \InvalidArgumentException(implode(' ', $errors));
+        }
+
+        $request->invoice_info = ValidationHelper::sanitizeCustomerInfo($request->invoice_info);
+        $request->shipping_info = ValidationHelper::sanitizeCustomerInfo($request->shipping_info);
+
+        $gateway = self::getGateway($auth->bank_code);
+
+        return $gateway->initializeHostedPayment($request, $auth);
+    }
+
+    /**
+     * Hosted ödeme sonrası bankadan dönen callback'i çözer, SaleResponse'a çevirir.
+     */
+    public static function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse
+    {
+        ValidationHelper::validateAuth($auth);
+
+        $gateway = self::getGateway($auth->bank_code);
+
+        return $gateway->resolveHostedPayment($callback, $auth);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace EvrenOnur\SanalPos\Gateways\Providers\Payten;
 
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
 use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
 use EvrenOnur\SanalPos\DTOs\MerchantAuth;
 use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
@@ -29,7 +31,7 @@ use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Support\MakesHttpRequests;
 use EvrenOnur\SanalPos\Support\StringHelper;
 
-abstract class AbstractPaytenGateway implements VirtualPOSServiceInterface
+abstract class AbstractPaytenGateway implements SupportsHostedPayment, SupportsRefund, VirtualPOSServiceInterface
 {
     use MakesHttpRequests;
 
