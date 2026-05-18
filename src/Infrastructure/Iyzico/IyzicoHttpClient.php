@@ -25,7 +25,9 @@ class IyzicoHttpClient
     public static function post(string $url, array $headers, array $body): array
     {
         try {
-            $jsonBody = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            // IyzicoHashGenerator ile aynı JSON flag'i kullan (default + PRESERVE_ZERO_FRACTION).
+            // UNESCAPED_SLASHES/UNICODE flag'leri Iyzico server'ı hash uyuşmazlığına götürür.
+            $jsonBody = json_encode($body, JSON_PRESERVE_ZERO_FRACTION);
             $content = self::getInstance()->httpPostRaw($url, $jsonBody, $headers);
 
             return json_decode($content, true) ?? [];

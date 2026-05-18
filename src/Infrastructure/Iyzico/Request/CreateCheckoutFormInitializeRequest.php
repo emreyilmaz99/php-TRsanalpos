@@ -10,16 +10,21 @@ use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
 /**
  * Iyzico CheckoutForm (hosted) ödeme başlatma isteği.
  *
- * CreatePaymentRequest'in kart bilgisi içermeyen versiyonudur. Kart bilgisi,
- * Iyzico'nun barındırdığı ödeme sayfasında kullanıcı tarafından girilir.
+ * Property DECLARATION order'ı KRİTİK — Iyzico v2 hash server tarafında order-sensitive
+ * olarak doğrulanıyor. Sıra resmi iyzipay-php SDK'sındaki getJsonObject() / toPKIRequestString()
+ * `add(...)` çağrı sırasıyla **birebir** aynı olmalı.
+ *
+ * SDK referans sıralaması:
+ *   locale, conversationId (parent)
+ *   price, basketId, paymentGroup, buyer, shippingAddress, billingAddress,
+ *   basketItems, callbackUrl, paymentSource, currency, posOrderId, paidPrice,
+ *   forceThreeDS, cardUserKey, enabledInstallments, debitCardAllowed, shippingAmountExcluded
  *
  * Endpoint: POST /payment/iyzipos/checkoutform/initialize/auth/ecom
  */
 class CreateCheckoutFormInitializeRequest extends IyzicoBaseRequest
 {
     public ?string $price = null;
-
-    public ?string $paidPrice = null;
 
     public ?string $basketId = null;
 
@@ -38,6 +43,8 @@ class CreateCheckoutFormInitializeRequest extends IyzicoBaseRequest
 
     public ?string $currency = null;
 
+    public ?string $paidPrice = null;
+
     /** @var int[]|null */
     public ?array $enabledInstallments = null;
 
@@ -46,7 +53,6 @@ class CreateCheckoutFormInitializeRequest extends IyzicoBaseRequest
         return PKIRequestStringBuilder::create()
             ->appendSuper(parent::toPKIRequestString())
             ->appendPrice('price', $this->price)
-            ->appendPrice('paidPrice', $this->paidPrice)
             ->append('basketId', $this->basketId)
             ->append('paymentGroup', $this->paymentGroup)
             ->append('buyer', $this->buyer)
@@ -55,6 +61,7 @@ class CreateCheckoutFormInitializeRequest extends IyzicoBaseRequest
             ->appendList('basketItems', $this->basketItems)
             ->append('callbackUrl', $this->callbackUrl)
             ->append('currency', $this->currency)
+            ->appendPrice('paidPrice', $this->paidPrice)
             ->appendList('enabledInstallments', $this->enabledInstallments)
             ->getRequestString();
     }

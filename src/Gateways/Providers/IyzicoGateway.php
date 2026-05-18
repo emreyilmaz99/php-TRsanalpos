@@ -129,12 +129,13 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
         }
 
         $options = $this->getOptions($auth);
-        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
 
         if ($request->payment_3d?->confirm === true) {
             // 3D Secure
+            $uri = '/payment/3dsecure/initialize';
+            $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
             $result = IyzicoHttpClient::post(
-                $options->baseUrl . '/payment/3dsecure/initialize',
+                $options->baseUrl . $uri,
                 $headers,
                 $req->toArray()
             );
@@ -157,8 +158,10 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
             }
         } else {
             // Normal ödeme
+            $uri = '/payment/auth';
+            $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
             $result = IyzicoHttpClient::post(
-                $options->baseUrl . '/payment/auth',
+                $options->baseUrl . $uri,
                 $headers,
                 $req->toArray()
             );
@@ -206,10 +209,11 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
             $paymentRequest->conversationData = $responseArray['conversationData'] ?? '';
 
             $options = $this->getOptions($auth);
-            $headers = IyzicoHashGenerator::getHttpHeaders($paymentRequest, $options);
+            $uri = '/payment/3dsecure/auth';
+            $headers = IyzicoHashGenerator::getHttpHeaders($paymentRequest, $options, $uri);
 
             $result = IyzicoHttpClient::post(
-                $options->baseUrl . '/payment/3dsecure/auth',
+                $options->baseUrl . $uri,
                 $headers,
                 $paymentRequest->toArray()
             );
@@ -254,10 +258,11 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
         $req->ip = $ip;
 
         $options = $this->getOptions($auth);
-        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+        $uri = '/payment/cancel';
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
 
         $result = IyzicoHttpClient::post(
-            $options->baseUrl . '/payment/cancel',
+            $options->baseUrl . $uri,
             $headers,
             $req->toArray()
         );
@@ -290,10 +295,11 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
         $req->paymentId = $request->transaction_id;
 
         $options = $this->getOptions($auth);
-        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+        $uri = '/v2/payment/refund';
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
 
         $result = IyzicoHttpClient::post(
-            $options->baseUrl . '/v2/payment/refund',
+            $options->baseUrl . $uri,
             $headers,
             $req->toArray()
         );
@@ -324,10 +330,11 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
         $req->price = $amount;
 
         $options = $this->getOptions($auth);
-        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+        $uri = '/payment/iyzipos/installment';
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
 
         $result = IyzicoHttpClient::post(
-            $options->baseUrl . '/payment/iyzipos/installment',
+            $options->baseUrl . $uri,
             $headers,
             $req->toArray()
         );
@@ -430,10 +437,11 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
         $req->basketItems = [$basketItem];
 
         $options = $this->getOptions($auth);
-        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+        $uri = '/payment/iyzipos/checkoutform/initialize/auth/ecom';
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
 
         $result = IyzicoHttpClient::post(
-            $options->baseUrl . '/payment/iyzipos/checkoutform/initialize/auth/ecom',
+            $options->baseUrl . $uri,
             $headers,
             $req->toArray()
         );
@@ -476,10 +484,11 @@ class IyzicoGateway extends AbstractGateway implements SupportsHostedPayment, Su
         $req->token = $token;
 
         $options = $this->getOptions($auth);
-        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options);
+        $uri = '/payment/iyzipos/checkoutform/auth/ecom/detail';
+        $headers = IyzicoHashGenerator::getHttpHeaders($req, $options, $uri);
 
         $result = IyzicoHttpClient::post(
-            $options->baseUrl . '/payment/iyzipos/checkoutform/auth/ecom/detail',
+            $options->baseUrl . $uri,
             $headers,
             $req->toArray()
         );
