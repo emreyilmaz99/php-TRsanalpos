@@ -13,6 +13,12 @@ use EvrenOnur\SanalPos\DTOs\SaleInfo;
  */
 class HostedPaymentRequest
 {
+    /**
+     * @param  array<string, mixed>  $extra  Gateway'e özgü opsiyonel alanlar:
+     *                                       - `callback_url` (string): NestPay sunucu-sunucu webhook URL'si. Sağlanmazsa
+     *                                       success_url'e fallback olur. "Approved" yanıt dönene kadar her 5 dakikada bir
+     *                                       NestPay tarafından tekrarlanır (idempotency_key ile dedup edin).
+     */
     public function __construct(
         public string $order_number = '',
         public string $customer_ip_address = '',
@@ -24,7 +30,13 @@ class HostedPaymentRequest
         public string $language = 'tr',
         public bool $is_desktop = true,
         public ?string $idempotency_key = null,
+        public array $extra = [],
     ) {}
+
+    public function getExtra(string $key, mixed $default = null): mixed
+    {
+        return $this->extra[$key] ?? $default;
+    }
 
     public static function fromArray(array $data): self
     {
@@ -39,6 +51,7 @@ class HostedPaymentRequest
             language: $data['language'] ?? 'tr',
             is_desktop: (bool) ($data['is_desktop'] ?? true),
             idempotency_key: $data['idempotency_key'] ?? null,
+            extra: $data['extra'] ?? [],
         );
     }
 

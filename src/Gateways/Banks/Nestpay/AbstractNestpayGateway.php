@@ -294,7 +294,14 @@ abstract class AbstractNestpayGateway implements SupportsHostedPayment, Supports
     }
 
     // Hosted mode docs: NestPay 3D_PAY_HOSTING storetype — kart bilgisi banka sayfasında alınır.
-    // Aynı hash algoritması (ver3) ve aynı 3D gateway URL'i kullanılır; sale3D'den farkı pan/cv2/expdate yokluğu.
+    // Resmi entegrasyon dökümanı (Nestpay v1.3, 2014) PAN/ExpDate alanlarını listelese de
+    // modern sandbox'lar kart-suz akışı kabul ediyor (İş Bankası live-doğrulandı).
+    // Hash: ver3 (SHA512 + ksort + escape + storekey) — doc'taki eski SHA1'den daha güvenli,
+    // `hashAlgorithm=ver3` field'ı ile NestPay'a hangi algoritmayı kullandığımızı bildiriyoruz.
+    //
+    // ÖNEMLİ — `callbackUrl`: Tarayıcı kapatma vb. durumlarda NestPay sonucu okUrl/failUrl
+    // yerine sunucu-sunucu olarak callbackUrl'ye POST eder. "Approved" yanıt alana kadar
+    // her 5 dakikada bir tekrar dener (idempotent webhook). Doc bunu zorunlu kabul ediyor.
     public function initializeHostedPayment(HostedPaymentRequest $request, MerchantAuth $auth): HostedPaymentResponse
     {
         $installment = $request->sale_info && $request->sale_info->installment > 1
@@ -307,6 +314,7 @@ abstract class AbstractNestpayGateway implements SupportsHostedPayment, Supports
             'oid' => $request->order_number,
             'okUrl' => $request->success_url,
             'failUrl' => $request->fail_url,
+            'callbackUrl' => (string) $request->getExtra('callback_url', $request->success_url),
             'rnd' => bin2hex(random_bytes(16)),
             'storetype' => '3d_pay_hosting',
             'lang' => $request->language ?: 'tr',
