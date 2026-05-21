@@ -44,7 +44,7 @@ SanalPos, Türkiye'deki birçok bankanın ve ödeme kuruluşunun sanal POS enteg
 Composer ile projenize ekleyin:
 
 ```bash
-composer require evrenonur/sanalpos
+composer require emreyilmaz99/php-trsanalpos
 ```
 
 Laravel otomatik olarak ServiceProvider'ı ve Facade'ı kaydeder. Config dosyasını yayınlamak için:
@@ -52,6 +52,8 @@ Laravel otomatik olarak ServiceProvider'ı ve Facade'ı kaydeder. Config dosyas�
 ```bash
 php artisan vendor:publish --provider="EvrenOnur\SanalPos\SanalPosServiceProvider"
 ```
+
+> **Not:** PHP namespace'i (`EvrenOnur\SanalPos`) orijinal paketle aynı kalmıştır — fork olduğu için breaking change yaratmamak adına. Sadece composer paket adı değişmiştir.
 
 ## Kullanılabilir Sanal POS'lar
 
