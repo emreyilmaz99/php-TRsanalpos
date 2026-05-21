@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.2...v0.1.3) (2026-05-21)
+
+### 📝 Dokümantasyon
+
+* fix composer require command to new package name ([e979082](https://github.com/emreyilmaz99/php-TRsanalpos/commit/e97908245bb2ed180edf881a55242c538fa1ed39))
+
 ## [0.1.2](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.1...v0.1.2) (2026-05-21)
 
 ### 💄 Kod Stili

@@ -1,6 +1,6 @@
 {
   "name": "emreyilmaz99/php-trsanalpos",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Türkiye'deki banka ve ödeme kuruluşlarının sanal POS entegrasyonlarını tek bir Laravel paketi altında birleştiren kütüphane. evrenonur/sanalpos fork'u + hosted payment, event dispatcher, idempotency, webhook validation, capability interfaces, live sandbox doğrulamaları.",
   "keywords": [
     "laravel",
