@@ -74,7 +74,7 @@ it('Garanti full flow: non-3D sale → live transaction_id → cancel/void', fun
     // dönüyor). Bu durumu test'i durdurmaktansa, "incomplete" olarak işaretliyoruz.
     try {
         $saleRes = $gateway->sale(garantiLiveSale($orderId), $auth);
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         if (str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28')) {
             $this->markTestIncomplete('Garanti VPServlet sandbox timeout (network/server flakiness): ' . $e->getMessage());
         }
