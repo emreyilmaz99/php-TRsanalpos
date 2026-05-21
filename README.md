@@ -4,27 +4,24 @@
 [![PHP Version](https://img.shields.io/badge/PHP-%5E8.3-blue)](https://www.php.net/)
 [![Laravel](https://img.shields.io/badge/Laravel-10%20%7C%2011%20%7C%2012%20%7C%2013-red)](https://laravel.com)
 
-> **Bu paket [evrenonur/sanalpos](https://github.com/evrenonur/sanalpos) kütüphanesinin fork'udur.**
-> Orijinal eser MIT lisanslıdır. Bu fork; **hosted payment (kart bankada) desteği, event dispatcher, idempotency, webhook validation, capability interfaces, kart maskeleme, PHPStan entegrasyonu** ve **16 banka/PSP için canlı sandbox doğrulaması** eklemektedir.
+> Bu paket [evrenonur/sanalpos](https://github.com/evrenonur/sanalpos) kütüphanesinin MIT lisanslı fork'u olarak başlamış, üzerine birkaç ek modül eklenmiştir.
 > Orijinal kütüphane [CP.VPOS](https://github.com/cempehlivan/CP.VPOS) (.NET) projesinin PHP/Laravel portudur.
 
 ## SanalPos: Sanal Pos Entegrasyonlarını Basitleştirin
 
 SanalPos, Türkiye'deki birçok bankanın ve ödeme kuruluşunun sanal POS entegrasyonlarını tek bir kod tabanı ile kullanmayı mümkün kılan PHP/Laravel kütüphanesidir. Bu sayede geliştiriciler, her banka için ayrı ayrı kod yazmak zorunda kalmadan, tüm sanal POS işlemlerini tek bir kütüphane üzerinden gerçekleştirebilirler.
 
-## Bu fork neyi farklı kılıyor?
+## Bu fork'taki ek modüller
 
-| Özellik | evrenonur/sanalpos | Bu fork |
-|---|---|---|
-| Sale + 3D Secure + Cancel + Refund | ✅ | ✅ |
-| **Hosted Payment (kart bankada — PCI SAQ-A)** | ❌ | ✅ Iyzico CheckoutForm, Garanti OOS, Akbank payhosting, NestPay 3D_PAY_HOSTING, Payten SESSIONTOKEN, ve fazlası |
-| **Live sandbox doğrulanmış** | — | ✅ Iyzico, Garanti, Akbank, NestPay İş Bankası + Ziraat (12 NestPay banka pattern-verified) |
-| **Event dispatcher** (PaymentInitiated/Succeeded/Failed) | ❌ | ✅ Framework-agnostic + Laravel-aware |
-| **Idempotency** (DuplicateRequestException) | ❌ | ✅ Cache-backed, race-safe |
-| **Webhook validation** (IP whitelist + replay protection) | ❌ | ✅ |
-| **Kart maskeleme** (`__debugInfo` + `JsonSerializable`) | ❌ | ✅ PCI-DSS uyumlu, plain-text PAN log'a sızmıyor |
-| **Capability interfaces** (`SupportsHostedPayment`, `SupportsRefund`...) | ❌ | ✅ |
-| **PHPStan + GitHub Actions CI** | ❌ | ✅ Level 3 + baseline |
+- **Hosted Payment (kart bankada — PCI-DSS SAQ-A uyumlu akış):** Iyzico CheckoutForm, Garanti BBVA Ortak Ödeme Sayfası, Akbank `/payhosting`, NestPay `3D_PAY_HOSTING`, Payten SESSIONTOKEN, Vakıfbank Common Payment, Vakıf Katılım CommonPaymentPage, PayNKolay form-redirect, Intertech VPOS (Denizbank + QNB Finansbank)
+- **Live sandbox doğrulaması:** Iyzico, Garanti BBVA, Akbank, NestPay İş Bankası, NestPay Ziraat Bankası canlı sandbox'larında uçtan uca test edilmiş. NestPay ailesi için aynı recipe 12 banka kapsar.
+- **Event dispatcher** (framework-agnostic + Laravel-aware): `PaymentInitiated`, `PaymentSucceeded`, `PaymentFailed` event'leri.
+- **Idempotency:** `SaleRequest::idempotency_key` ile aynı butona iki kez basma korumalı. `DuplicateRequestException` + cache-backed dedup.
+- **Webhook validation helper:** IP whitelist + timestamp (replay attack) kontrolü.
+- **PII redaction:** Kart numarası ve CVV otomatik maskelenir (`__debugInfo` + `JsonSerializable`); plain-text PAN log'a sızmaz.
+- **Capability marker interfaces:** `SupportsHostedPayment`, `SupportsRefund`, `SupportsSaleQuery`, `SupportsInstallmentQuery`. `$gateway instanceof SupportsHostedPayment` ile çağırmadan önce kontrol.
+- **HTTP request/response logging:** PSR-3 logger (LoggerAware trait) üzerinden, PII maskeli.
+- **PHPStan + GitHub Actions CI:** Level 3 + baseline.
 
 ## Özellikler
 
