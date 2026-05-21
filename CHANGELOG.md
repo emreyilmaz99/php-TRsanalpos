@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.0...v0.1.1) (2026-05-21)
+
+### 📝 Dokümantasyon
+
+* soften README — drop comparison table, list this fork's additions neutrally ([a239df0](https://github.com/emreyilmaz99/php-TRsanalpos/commit/a239df0ab75be2f2f3ba1e81bba47b962d844fa1))
+
 ## 0.1.0 (2026-05-21)
 
 ### 🚀 Yeni Özellikler
