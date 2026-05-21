@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.1...v0.1.2) (2026-05-21)
+
+### 💄 Kod Stili
+
+* pint normalize Throwable namespace in smoke test ([0aa6dde](https://github.com/emreyilmaz99/php-TRsanalpos/commit/0aa6dde709c9d035eed9227bdfe78096e41d70ca))
+
 ## [0.1.1](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.0...v0.1.1) (2026-05-21)
 
 ### 📝 Dokümantasyon
