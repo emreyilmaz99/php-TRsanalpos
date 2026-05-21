@@ -1,7 +1,7 @@
 {
-  "name": "evrenonur/sanalpos",
-  "version": "1.2.0",
-  "description": "Türkiye'deki banka ve ödeme kuruluşlarının sanal POS entegrasyonlarını tek bir Laravel paketi altında birleştiren kütüphane",
+  "name": "emreyilmaz99/php-trsanalpos",
+  "version": "2.0.0",
+  "description": "Türkiye'deki banka ve ödeme kuruluşlarının sanal POS entegrasyonlarını tek bir Laravel paketi altında birleştiren kütüphane. evrenonur/sanalpos fork'u + hosted payment, event dispatcher, idempotency, webhook validation, capability interfaces, live sandbox doğrulamaları.",
   "keywords": [
     "laravel",
     "sanal-pos",
@@ -14,13 +14,24 @@
     "yapikredi",
     "isbank",
     "iyzico",
-    "sipay"
+    "sipay",
+    "hosted-payment",
+    "3d-secure",
+    "saq-a",
+    "pci-dss"
   ],
   "license": "MIT",
   "authors": [
     {
+      "name": "Emre Yılmaz",
+      "email": "yilmazemre4499@gmail.com",
+      "role": "Maintainer"
+    },
+    {
       "name": "Evren Onur",
-      "email": "onur.evren.1999@gmail.com"
+      "email": "onur.evren.1999@gmail.com",
+      "homepage": "https://github.com/evrenonur/sanalpos",
+      "role": "Original author"
     }
   ],
   "type": "library",

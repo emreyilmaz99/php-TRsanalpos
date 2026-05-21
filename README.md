@@ -1,14 +1,30 @@
-# SanalPos
+# php-TRsanalpos
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/evrenonur/sanalpos)](https://packagist.org/packages/evrenonur/sanalpos)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PHP Version](https://img.shields.io/packagist/php-v/evrenonur/sanalpos)](https://packagist.org/packages/evrenonur/sanalpos)
+[![PHP Version](https://img.shields.io/badge/PHP-%5E8.3-blue)](https://www.php.net/)
+[![Laravel](https://img.shields.io/badge/Laravel-10%20%7C%2011%20%7C%2012%20%7C%2013-red)](https://laravel.com)
+
+> **Bu paket [evrenonur/sanalpos](https://github.com/evrenonur/sanalpos) kütüphanesinin fork'udur.**
+> Orijinal eser MIT lisanslıdır. Bu fork; **hosted payment (kart bankada) desteği, event dispatcher, idempotency, webhook validation, capability interfaces, kart maskeleme, PHPStan entegrasyonu** ve **16 banka/PSP için canlı sandbox doğrulaması** eklemektedir.
+> Orijinal kütüphane [CP.VPOS](https://github.com/cempehlivan/CP.VPOS) (.NET) projesinin PHP/Laravel portudur.
 
 ## SanalPos: Sanal Pos Entegrasyonlarını Basitleştirin
 
 SanalPos, Türkiye'deki birçok bankanın ve ödeme kuruluşunun sanal POS entegrasyonlarını tek bir kod tabanı ile kullanmayı mümkün kılan PHP/Laravel kütüphanesidir. Bu sayede geliştiriciler, her banka için ayrı ayrı kod yazmak zorunda kalmadan, tüm sanal POS işlemlerini tek bir kütüphane üzerinden gerçekleştirebilirler.
 
-> Bu paket, [CP.VPOS](https://github.com/cempehlivan/CP.VPOS) (.NET) kütüphanesinin PHP/Laravel portudur.
+## Bu fork neyi farklı kılıyor?
+
+| Özellik | evrenonur/sanalpos | Bu fork |
+|---|---|---|
+| Sale + 3D Secure + Cancel + Refund | ✅ | ✅ |
+| **Hosted Payment (kart bankada — PCI SAQ-A)** | ❌ | ✅ Iyzico CheckoutForm, Garanti OOS, Akbank payhosting, NestPay 3D_PAY_HOSTING, Payten SESSIONTOKEN, ve fazlası |
+| **Live sandbox doğrulanmış** | — | ✅ Iyzico, Garanti, Akbank, NestPay İş Bankası + Ziraat (12 NestPay banka pattern-verified) |
+| **Event dispatcher** (PaymentInitiated/Succeeded/Failed) | ❌ | ✅ Framework-agnostic + Laravel-aware |
+| **Idempotency** (DuplicateRequestException) | ❌ | ✅ Cache-backed, race-safe |
+| **Webhook validation** (IP whitelist + replay protection) | ❌ | ✅ |
+| **Kart maskeleme** (`__debugInfo` + `JsonSerializable`) | ❌ | ✅ PCI-DSS uyumlu, plain-text PAN log'a sızmıyor |
+| **Capability interfaces** (`SupportsHostedPayment`, `SupportsRefund`...) | ❌ | ✅ |
+| **PHPStan + GitHub Actions CI** | ❌ | ✅ Level 3 + baseline |
 
 ## Özellikler
 
