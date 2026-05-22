@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.6](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.5...v0.1.6) (2026-05-22)
+
+### 📝 Dokümantasyon
+
+* minor whitespace touch in README ([597af28](https://github.com/emreyilmaz99/php-TRsanalpos/commit/597af28c11a7bf58ef667b8e22aad082c8d0a010))
+
 ## [0.1.5](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.4...v0.1.5) (2026-05-21)
 
 ## [0.1.4](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.3...v0.1.4) (2026-05-21)
