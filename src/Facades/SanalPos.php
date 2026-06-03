@@ -16,6 +16,17 @@ use Illuminate\Support\Facades\Facade;
  * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse saleQuery(\EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
  * @method static \EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse initializeHostedPayment(\EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
  * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleResponse resolveHostedPayment(\EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback $callback, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \EvrenOnur\SanalPos\DTOs\Responses\StoreCardResponse storeCard(\EvrenOnur\SanalPos\DTOs\Requests\StoreCardRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleResponse chargeStoredCard(\EvrenOnur\SanalPos\DTOs\Requests\ChargeStoredCardRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \EvrenOnur\SanalPos\DTOs\Responses\DeleteStoredCardResponse deleteStoredCard(\EvrenOnur\SanalPos\DTOs\Requests\DeleteStoredCardRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \EvrenOnur\SanalPos\Testing\FakePos fake()
+ * @method static void fakeQueue(string $method, object $response)
+ * @method static void fakeReset()
+ * @method static void assertCalled(string $method)
+ * @method static void assertNotCalled(string $method)
+ * @method static void assertCallCount(string $method, int $expected)
+ * @method static void assertNothingSent()
+ * @method static void assertSent(string $method, callable $predicate)
  * @method static array allBankList(?callable $filter = null)
  *
  * @see SanalPosClient

@@ -42,6 +42,8 @@ use EvrenOnur\SanalPos\Gateways\Providers\Payten\PaytenGateway;
 use EvrenOnur\SanalPos\Gateways\Providers\Payten\VakifPaySGateway;
 use EvrenOnur\SanalPos\Gateways\Providers\Payten\ZiraatPayGateway;
 use EvrenOnur\SanalPos\Gateways\Providers\TamiGateway;
+use EvrenOnur\SanalPos\Testing\FakeGateway;
+use EvrenOnur\SanalPos\Testing\FakePos;
 use InvalidArgumentException;
 
 class BankService
@@ -271,6 +273,11 @@ class BankService
      */
     public static function createGateway(string $bank_code): VirtualPOSServiceInterface
     {
+        // Test sahnesinde — gerçek gateway yerine FakeGateway dön.
+        if (FakePos::isActive()) {
+            return new FakeGateway;
+        }
+
         $class = self::getGatewayClass($bank_code);
 
         if ($class === null) {

@@ -7,20 +7,25 @@ use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
 use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
 use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
+use EvrenOnur\SanalPos\DTOs\Requests\StoreCardRequest;
 use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
 use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
+use EvrenOnur\SanalPos\DTOs\Responses\StoreCardResponse;
 
 interface VirtualPOSServiceInterface
 {
@@ -77,4 +82,20 @@ interface VirtualPOSServiceInterface
      * ve nihai SaleResponse'a çevirir.
      */
     public function resolveHostedPayment(HostedPaymentCallback $callback, MerchantAuth $auth): SaleResponse;
+
+    /**
+     * Kart saklama — bankaya/gateway'e özgü token üretir. Token sonraki çekimlerde
+     * card_number yerine kullanılır (PCI-DSS sahasını daraltır).
+     */
+    public function storeCard(StoreCardRequest $request, MerchantAuth $auth): StoreCardResponse;
+
+    /**
+     * Saklanmış kart token'ı ile çekim.
+     */
+    public function chargeStoredCard(ChargeStoredCardRequest $request, MerchantAuth $auth): SaleResponse;
+
+    /**
+     * Saklanmış kartı siler.
+     */
+    public function deleteStoredCard(DeleteStoredCardRequest $request, MerchantAuth $auth): DeleteStoredCardResponse;
 }

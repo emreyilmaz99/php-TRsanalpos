@@ -30,10 +30,12 @@ use EvrenOnur\SanalPos\Enums\SaleQueryResponseStatus;
 use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
 use EvrenOnur\SanalPos\Support\MakesHttpRequests;
 use EvrenOnur\SanalPos\Support\StringHelper;
+use EvrenOnur\SanalPos\Support\TokenizationStubs;
 
 abstract class AbstractPaytenGateway implements SupportsHostedPayment, SupportsRefund, VirtualPOSServiceInterface
 {
     use MakesHttpRequests;
+    use TokenizationStubs;
 
     abstract protected function getApiTestUrl(): string;
 
