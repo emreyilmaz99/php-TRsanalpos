@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.0](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.6...v0.2.0) (2026-06-15)
+
+### 🚀 Yeni Özellikler
+
+* retry/circuit-breaker, tokenization capability ve fake driver ([60d163d](https://github.com/emreyilmaz99/php-TRsanalpos/commit/60d163d5da8024b7ea8490e9e8448bcfe12569af))
+
+### ♻️ Yeniden Düzenleme
+
+* rename PHP namespace EvrenOnur\SanalPos -> Emreyilmaz99\SanalPos ([e0eed5d](https://github.com/emreyilmaz99/php-TRsanalpos/commit/e0eed5de42cc44c03435fd1dce68f1d92d97f844))
+
 ## [0.1.6](https://github.com/emreyilmaz99/php-TRsanalpos/compare/v0.1.5...v0.1.6) (2026-05-22)
 
 ### 📝 Dokümantasyon
