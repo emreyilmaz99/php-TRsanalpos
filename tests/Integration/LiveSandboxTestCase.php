@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Tests\Integration;
+namespace Emreyilmaz99\SanalPos\Tests\Integration;
 
 /**
  * Canlı sandbox doğrulama test base class.

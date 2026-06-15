@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways\Providers\CCPayment;
+namespace Emreyilmaz99\SanalPos\Gateways\Providers\CCPayment;
 
 class ParolaparaGateway extends AbstractCCPaymentGateway
 {

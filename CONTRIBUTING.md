@@ -13,7 +13,7 @@ git clone https://github.com/KULLANICI_ADINIZ/sanalpos.git
 cd sanalpos
 
 # Upstream remote ekleyin
-git remote add upstream https://github.com/evrenonur/sanalpos.git
+git remote add upstream https://github.com/emreyilmaz99/php-TRsanalpos.git
 ```
 
 ### 2. Branch Oluşturun
@@ -105,9 +105,9 @@ Yeni bir gateway eklemek istiyorsanız:
 ```php
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways\Banks;
+namespace Emreyilmaz99\SanalPos\Gateways\Banks;
 
-use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
+use Emreyilmaz99\SanalPos\Contracts\VirtualPOSServiceInterface;
 
 class YeniBankaGateway implements VirtualPOSServiceInterface
 {
@@ -158,7 +158,7 @@ composer lint
 
 ## Hata Bildirimi
 
-Hata bildirmek için [Issues](https://github.com/evrenonur/sanalpos/issues) sayfasını kullanın:
+Hata bildirmek için [Issues](https://github.com/emreyilmaz99/php-TRsanalpos/issues) sayfasını kullanın:
 
 1. Önce benzer bir issue var mı kontrol edin
 2. Yeni issue oluştururken şablon doldurun

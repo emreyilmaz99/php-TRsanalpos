@@ -1,9 +1,9 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Infrastructure\Iyzico\Model;
+namespace Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model;
 
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKISerializable;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\PKISerializable;
 
 /**
  * Iyzico ödeme kartı modeli.

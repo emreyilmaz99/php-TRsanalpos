@@ -17,13 +17,13 @@
  * doğrulanabilir.
  */
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Gateways\Banks\Nestpay\IsBankasiGateway;
-use EvrenOnur\SanalPos\Tests\Integration\LiveSandboxTestCase;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\Banks\Nestpay\IsBankasiGateway;
+use Emreyilmaz99\SanalPos\Tests\Integration\LiveSandboxTestCase;
 
 function isBankasiLiveAuth(): MerchantAuth
 {

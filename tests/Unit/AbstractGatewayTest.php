@@ -1,18 +1,18 @@
 <?php
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleQueryResponseStatus;
-use EvrenOnur\SanalPos\Gateways\AbstractGateway;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleQueryResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\AbstractGateway;
 
 function createTestAuth(): MerchantAuth
 {

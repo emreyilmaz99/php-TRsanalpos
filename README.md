@@ -50,10 +50,10 @@ composer require emreyilmaz99/php-trsanalpos
 Laravel otomatik olarak ServiceProvider'ı ve Facade'ı kaydeder. Config dosyasını yayınlamak için:
 
 ```bash
-php artisan vendor:publish --provider="EvrenOnur\SanalPos\SanalPosServiceProvider"
+php artisan vendor:publish --provider="Emreyilmaz99\SanalPos\SanalPosServiceProvider"
 ```
 
-> **Not:** PHP namespace'i (`EvrenOnur\SanalPos`) orijinal paketle aynı kalmıştır — fork olduğu için breaking change yaratmamak adına. Sadece composer paket adı değişmiştir.
+> **Not:** Bu paket fork olarak başlamıştır. Composer adı ve PHP namespace'i (`Emreyilmaz99\SanalPos`) bu fork'a özgüdür; orijinal `evrenonur/sanalpos` paketinden kullanıyorsanız hem `composer require` hem de `use` ifadelerini güncellemeniz gerekir.
 
 ## Kullanılabilir Sanal POS'lar
 
@@ -124,7 +124,7 @@ CCPayment altyapısını kullanan ödeme kuruluşlarında taksitli işlemlerde o
 - `InstallmentCommissionPolicy::AbsorbByMerchant`: Komisyon satıcı üzerinde bırakılır
 
 ```php
-use EvrenOnur\SanalPos\Enums\InstallmentCommissionPolicy;
+use Emreyilmaz99\SanalPos\Enums\InstallmentCommissionPolicy;
 
 $auth = new MerchantAuth(
     bank_code: BankService::SIPAY,
@@ -144,11 +144,11 @@ $auth = new MerchantAuth(
 `payment_3d->confirm = false` gönderilmesi halinde 3D'siz çekim işlemi yapılır ve direkt olarak nihai sonuç döner.
 
 ```php
-use EvrenOnur\SanalPos\SanalPosClient;
-use EvrenOnur\SanalPos\DTOs\{MerchantAuth, SaleInfo, CustomerInfo, Payment3DConfig};
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\Services\BankService;
-use EvrenOnur\SanalPos\Enums\{Currency, Country};
+use Emreyilmaz99\SanalPos\SanalPosClient;
+use Emreyilmaz99\SanalPos\DTOs\{MerchantAuth, SaleInfo, CustomerInfo, Payment3DConfig};
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\Services\BankService;
+use Emreyilmaz99\SanalPos\Enums\{Currency, Country};
 
 $auth = new MerchantAuth(
     bank_code: BankService::QNBPAY,
@@ -233,7 +233,7 @@ $response = SanalPosClient::sale($saleRequest, $auth);
 ### 3D Secure Satış İşlemi - 2. Adım
 
 ```php
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
 
 // Controller method - 3D'den gelen callback
 public function virtualPOS3DResponse(Request $request)
@@ -256,7 +256,7 @@ public function virtualPOS3DResponse(Request $request)
 ### İptal İşlemi
 
 ```php
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
 
 $cancelRequest = new CancelRequest(
     order_number: 'ORDER-001',
@@ -269,7 +269,7 @@ $response = SanalPosClient::cancel($cancelRequest, $auth);
 ### İade İşlemi
 
 ```php
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
 
 $refundRequest = new RefundRequest(
     order_number: 'ORDER-001',
@@ -283,7 +283,7 @@ $response = SanalPosClient::refund($refundRequest, $auth);
 ### BIN Taksit Sorgulama
 
 ```php
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
 
 $request = new BINInstallmentQueryRequest(
     BIN: '411111',  // Kart numarasının ilk 6 hanesi
@@ -296,7 +296,7 @@ $response = SanalPosClient::binInstallmentQuery($request, $auth);
 ### Laravel Facade ile Kullanım
 
 ```php
-use EvrenOnur\SanalPos\Facades\SanalPos;
+use Emreyilmaz99\SanalPos\Facades\SanalPos;
 
 $response = SanalPos::sale($saleRequest, $auth);
 $response = SanalPos::cancel($cancelRequest, $auth);
@@ -368,7 +368,7 @@ Config dosyasında (`config/sanalpos.php`) aşağıdaki ayarlar mevcuttur:
 HTTP istekleri sırasında oluşan hatalar `HttpRequestException` olarak fırlatılır:
 
 ```php
-use EvrenOnur\SanalPos\Exceptions\HttpRequestException;
+use Emreyilmaz99\SanalPos\Exceptions\HttpRequestException;
 
 try {
     $response = SanalPosClient::sale($saleRequest, $auth);

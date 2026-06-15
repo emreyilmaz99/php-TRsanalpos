@@ -1,21 +1,32 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Facades;
+namespace Emreyilmaz99\SanalPos\Facades;
 
-use EvrenOnur\SanalPos\SanalPosClient;
+use Emreyilmaz99\SanalPos\SanalPosClient;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleResponse sale(\EvrenOnur\SanalPos\DTOs\Requests\SaleRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleResponse sale3DResponse(\EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse binInstallmentQuery(\EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse allInstallmentQuery(\EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse additionalInstallmentQuery(\EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\CancelResponse cancel(\EvrenOnur\SanalPos\DTOs\Requests\CancelRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\RefundResponse refund(\EvrenOnur\SanalPos\DTOs\Requests\RefundRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse saleQuery(\EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse initializeHostedPayment(\EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest $request, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
- * @method static \EvrenOnur\SanalPos\DTOs\Responses\SaleResponse resolveHostedPayment(\EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback $callback, \EvrenOnur\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse sale(\Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse sale3DResponse(\Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\BINInstallmentQueryResponse binInstallmentQuery(\Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\AllInstallmentQueryResponse allInstallmentQuery(\Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse additionalInstallmentQuery(\Emreyilmaz99\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\CancelResponse cancel(\Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\RefundResponse refund(\Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\SaleQueryResponse saleQuery(\Emreyilmaz99\SanalPos\DTOs\Requests\SaleQueryRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\HostedPaymentResponse initializeHostedPayment(\Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse resolveHostedPayment(\Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback $callback, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\StoreCardResponse storeCard(\Emreyilmaz99\SanalPos\DTOs\Requests\StoreCardRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse chargeStoredCard(\Emreyilmaz99\SanalPos\DTOs\Requests\ChargeStoredCardRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\DTOs\Responses\DeleteStoredCardResponse deleteStoredCard(\Emreyilmaz99\SanalPos\DTOs\Requests\DeleteStoredCardRequest $request, \Emreyilmaz99\SanalPos\DTOs\MerchantAuth $auth)
+ * @method static \Emreyilmaz99\SanalPos\Testing\FakePos fake()
+ * @method static void fakeQueue(string $method, object $response)
+ * @method static void fakeReset()
+ * @method static void assertCalled(string $method)
+ * @method static void assertNotCalled(string $method)
+ * @method static void assertCallCount(string $method, int $expected)
+ * @method static void assertNothingSent()
+ * @method static void assertSent(string $method, callable $predicate)
  * @method static array allBankList(?callable $filter = null)
  *
  * @see SanalPosClient

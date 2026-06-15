@@ -1,9 +1,9 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Infrastructure\Iyzico\Request;
+namespace Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request;
 
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKISerializable;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\PKISerializable;
 
 /**
  * Iyzico temel istek sınıfı.

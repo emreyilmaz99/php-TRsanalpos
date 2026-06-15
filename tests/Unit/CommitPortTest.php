@@ -1,19 +1,19 @@
 <?php
 
-use EvrenOnur\SanalPos\DTOs\CustomerInfo;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Payment3DConfig;
-use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Enums\InstallmentCommissionPolicy;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Gateways\Providers\CCPayment\AbstractCCPaymentGateway;
-use EvrenOnur\SanalPos\Gateways\Providers\IyzicoGateway;
-use EvrenOnur\SanalPos\Gateways\Providers\PaynetGateway;
+use Emreyilmaz99\SanalPos\DTOs\CustomerInfo;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Payment3DConfig;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\InstallmentCommissionPolicy;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\Providers\CCPayment\AbstractCCPaymentGateway;
+use Emreyilmaz99\SanalPos\Gateways\Providers\IyzicoGateway;
+use Emreyilmaz99\SanalPos\Gateways\Providers\PaynetGateway;
 
 function createCommitPortAuth(InstallmentCommissionPolicy $policy = InstallmentCommissionPolicy::Default): MerchantAuth
 {

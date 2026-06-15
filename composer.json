@@ -49,21 +49,21 @@
   },
   "autoload": {
     "psr-4": {
-      "EvrenOnur\\SanalPos\\": "src/"
+      "Emreyilmaz99\\SanalPos\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "EvrenOnur\\SanalPos\\Tests\\": "tests/"
+      "Emreyilmaz99\\SanalPos\\Tests\\": "tests/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "EvrenOnur\\SanalPos\\SanalPosServiceProvider"
+        "Emreyilmaz99\\SanalPos\\SanalPosServiceProvider"
       ],
       "aliases": {
-        "SanalPos": "EvrenOnur\\SanalPos\\Facades\\SanalPos"
+        "SanalPos": "Emreyilmaz99\\SanalPos\\Facades\\SanalPos"
       }
     }
   },

@@ -1,30 +1,35 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways;
+namespace Emreyilmaz99\SanalPos\Gateways;
 
-use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleQueryResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Support\LoggerAware;
-use EvrenOnur\SanalPos\Support\MakesHttpRequests;
+use Emreyilmaz99\SanalPos\Contracts\VirtualPOSServiceInterface;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\StoreCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\CancelResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\HostedPaymentResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\RefundResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\StoreCardResponse;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleQueryResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Support\LoggerAware;
+use Emreyilmaz99\SanalPos\Support\MakesHttpRequests;
 
 /**
  * Tüm standalone gateway'ler için temel abstract sınıf.
@@ -82,6 +87,31 @@ abstract class AbstractGateway implements VirtualPOSServiceInterface
             status: SaleResponseStatus::Error,
             message: 'Bu sanal pos için hosted ödeme callback çözümleme şuan desteklenmiyor.',
             order_number: $callback->order_number,
+        );
+    }
+
+    public function storeCard(StoreCardRequest $request, MerchantAuth $auth): StoreCardResponse
+    {
+        return new StoreCardResponse(
+            status: ResponseStatus::Error,
+            message: 'Bu sanal pos için kart saklama (tokenization) şuan desteklenmiyor.',
+        );
+    }
+
+    public function chargeStoredCard(ChargeStoredCardRequest $request, MerchantAuth $auth): SaleResponse
+    {
+        return new SaleResponse(
+            status: SaleResponseStatus::Error,
+            message: 'Bu sanal pos için saklı kart ile çekim şuan desteklenmiyor.',
+            order_number: $request->order_number,
+        );
+    }
+
+    public function deleteStoredCard(DeleteStoredCardRequest $request, MerchantAuth $auth): DeleteStoredCardResponse
+    {
+        return new DeleteStoredCardResponse(
+            status: ResponseStatus::Error,
+            message: 'Bu sanal pos için saklı kart silme şuan desteklenmiyor.',
         );
     }
 }

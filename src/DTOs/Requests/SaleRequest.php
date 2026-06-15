@@ -1,10 +1,10 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Requests;
+namespace Emreyilmaz99\SanalPos\DTOs\Requests;
 
-use EvrenOnur\SanalPos\DTOs\CustomerInfo;
-use EvrenOnur\SanalPos\DTOs\Payment3DConfig;
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\DTOs\CustomerInfo;
+use Emreyilmaz99\SanalPos\DTOs\Payment3DConfig;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
 
 class SaleRequest
 {

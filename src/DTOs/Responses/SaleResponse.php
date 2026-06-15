@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Responses;
+namespace Emreyilmaz99\SanalPos\DTOs\Responses;
 
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
 
 class SaleResponse
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs;
+namespace Emreyilmaz99\SanalPos\DTOs;
 
-use EvrenOnur\SanalPos\Enums\Country;
+use Emreyilmaz99\SanalPos\Enums\Country;
 
 class CustomerInfo
 {

@@ -1,10 +1,10 @@
 <?php
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\Events\EventDispatcher;
-use EvrenOnur\SanalPos\Events\PaymentFailed;
-use EvrenOnur\SanalPos\Events\PaymentInitiated;
-use EvrenOnur\SanalPos\Events\PaymentSucceeded;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\Events\EventDispatcher;
+use Emreyilmaz99\SanalPos\Events\PaymentFailed;
+use Emreyilmaz99\SanalPos\Events\PaymentInitiated;
+use Emreyilmaz99\SanalPos\Events\PaymentSucceeded;
 
 beforeEach(function () {
     EventDispatcher::flushListeners();

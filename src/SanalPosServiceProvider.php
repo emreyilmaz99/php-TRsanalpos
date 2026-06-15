@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos;
+namespace Emreyilmaz99\SanalPos;
 
 use Illuminate\Support\ServiceProvider;
 

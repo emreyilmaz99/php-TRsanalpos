@@ -1,6 +1,6 @@
 <?php
 
-use EvrenOnur\SanalPos\Exceptions\HttpRequestException;
+use Emreyilmaz99\SanalPos\Exceptions\HttpRequestException;
 
 it('HttpRequestException url property taşır', function () {
     $ex = new HttpRequestException('Connection failed', 'https://example.com/api', 0);

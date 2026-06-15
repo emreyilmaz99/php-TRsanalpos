@@ -1,40 +1,46 @@
 <?php
 
-namespace EvrenOnur\SanalPos;
+namespace Emreyilmaz99\SanalPos;
 
-use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
-use EvrenOnur\SanalPos\DTOs\Bank;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Events\EventDispatcher;
-use EvrenOnur\SanalPos\Events\PaymentFailed;
-use EvrenOnur\SanalPos\Events\PaymentInitiated;
-use EvrenOnur\SanalPos\Events\PaymentSucceeded;
-use EvrenOnur\SanalPos\Exceptions\DuplicateRequestException;
-use EvrenOnur\SanalPos\Services\BankService;
-use EvrenOnur\SanalPos\Support\IdempotencyStore;
-use EvrenOnur\SanalPos\Support\InMemoryIdempotencyStore;
-use EvrenOnur\SanalPos\Support\LaravelCacheIdempotencyStore;
-use EvrenOnur\SanalPos\Support\StringHelper;
-use EvrenOnur\SanalPos\Support\ValidationHelper;
+use Emreyilmaz99\SanalPos\Contracts\VirtualPOSServiceInterface;
+use Emreyilmaz99\SanalPos\DTOs\Bank;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\StoreCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\CancelResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\HostedPaymentResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\RefundResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\StoreCardResponse;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Events\EventDispatcher;
+use Emreyilmaz99\SanalPos\Events\PaymentFailed;
+use Emreyilmaz99\SanalPos\Events\PaymentInitiated;
+use Emreyilmaz99\SanalPos\Events\PaymentSucceeded;
+use Emreyilmaz99\SanalPos\Exceptions\DuplicateRequestException;
+use Emreyilmaz99\SanalPos\Services\BankService;
+use Emreyilmaz99\SanalPos\Support\IdempotencyStore;
+use Emreyilmaz99\SanalPos\Support\InMemoryIdempotencyStore;
+use Emreyilmaz99\SanalPos\Support\LaravelCacheIdempotencyStore;
+use Emreyilmaz99\SanalPos\Support\StringHelper;
+use Emreyilmaz99\SanalPos\Support\ValidationHelper;
+use Emreyilmaz99\SanalPos\Testing\FakePos;
 
 class SanalPosClient
 {
@@ -257,6 +263,127 @@ class SanalPosClient
             ));
         }
         // RedirectHTML / RedirectURL durumları henüz outcome değil — async tamamlanır.
+    }
+
+    /**
+     * Kart saklama (tokenization). Bankaya/gateway'e özgü token üretir.
+     */
+    public static function storeCard(StoreCardRequest $request, MerchantAuth $auth): StoreCardResponse
+    {
+        ValidationHelper::validateAuth($auth);
+
+        $errors = $request->validate();
+        if (! empty($errors)) {
+            throw new \InvalidArgumentException(implode(' ', $errors));
+        }
+
+        if ($request->idempotency_key !== null && self::idempotencyStore()->seen('store:' . $request->idempotency_key)) {
+            throw new DuplicateRequestException($request->idempotency_key);
+        }
+
+        if ($request->card_holder_name !== '') {
+            $request->card_holder_name = StringHelper::clearString($request->card_holder_name);
+        }
+
+        return self::getGateway($auth->bank_code)->storeCard($request, $auth);
+    }
+
+    /**
+     * Saklı kart ile çekim.
+     */
+    public static function chargeStoredCard(ChargeStoredCardRequest $request, MerchantAuth $auth): SaleResponse
+    {
+        ValidationHelper::validateAuth($auth);
+
+        $errors = $request->validate();
+        if (! empty($errors)) {
+            throw new \InvalidArgumentException(implode(' ', $errors));
+        }
+
+        if ($request->idempotency_key !== null && self::idempotencyStore()->seen('charge:' . $request->idempotency_key)) {
+            throw new DuplicateRequestException($request->idempotency_key);
+        }
+
+        if ($request->invoice_info !== null) {
+            $request->invoice_info = ValidationHelper::sanitizeCustomerInfo($request->invoice_info);
+        }
+
+        EventDispatcher::dispatch(new PaymentInitiated($auth->bank_code, $request->order_number, $auth, ['flow' => 'charge_stored_card']));
+
+        $gateway = self::getGateway($auth->bank_code);
+        $response = $gateway->chargeStoredCard($request, $auth);
+
+        self::dispatchPaymentOutcome($auth, $request->order_number, $response, 'charge_stored_card');
+
+        return $response;
+    }
+
+    /**
+     * Saklı kartı sil.
+     */
+    public static function deleteStoredCard(DeleteStoredCardRequest $request, MerchantAuth $auth): DeleteStoredCardResponse
+    {
+        ValidationHelper::validateAuth($auth);
+
+        $errors = $request->validate();
+        if (! empty($errors)) {
+            throw new \InvalidArgumentException(implode(' ', $errors));
+        }
+
+        return self::getGateway($auth->bank_code)->deleteStoredCard($request, $auth);
+    }
+
+    /**
+     * Test sahnesi başlatır — bundan sonra tüm çağrılar FakeGateway'e gider,
+     * gerçek HTTP isteği yapılmaz. Test teardown'da `fakeReset()` çağrılmalı.
+     */
+    public static function fake(): FakePos
+    {
+        return FakePos::instance();
+    }
+
+    /**
+     * Belirli bir metoda response queue'la. FIFO sırayla tüketilir.
+     */
+    public static function fakeQueue(string $method, object $response): void
+    {
+        FakePos::instance()->queue($method, $response);
+    }
+
+    /**
+     * Fake durumunu sıfırlar — test teardown.
+     */
+    public static function fakeReset(): void
+    {
+        FakePos::reset();
+    }
+
+    public static function assertCalled(string $method): void
+    {
+        FakePos::instance()->assertCalled($method);
+    }
+
+    public static function assertNotCalled(string $method): void
+    {
+        FakePos::instance()->assertNotCalled($method);
+    }
+
+    public static function assertCallCount(string $method, int $expected): void
+    {
+        FakePos::instance()->assertCallCount($method, $expected);
+    }
+
+    public static function assertNothingSent(): void
+    {
+        FakePos::instance()->assertNothingSent();
+    }
+
+    /**
+     * @param  callable(object $request, MerchantAuth $auth): bool  $predicate
+     */
+    public static function assertSent(string $method, callable $predicate): void
+    {
+        FakePos::instance()->assertSent($method, $predicate);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-use EvrenOnur\SanalPos\Support\MakesHttpRequests;
+use Emreyilmaz99\SanalPos\Support\MakesHttpRequests;
 use GuzzleHttp\Client;
 
 // MakesHttpRequests trait testi için basit bir test sınıfı

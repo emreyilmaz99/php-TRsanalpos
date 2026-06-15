@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs;
+namespace Emreyilmaz99\SanalPos\DTOs;
 
-use EvrenOnur\SanalPos\Enums\CreditCardProgram;
+use Emreyilmaz99\SanalPos\Enums\CreditCardProgram;
 
 class AllInstallment
 {

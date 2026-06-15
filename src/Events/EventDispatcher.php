@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Events;
+namespace Emreyilmaz99\SanalPos\Events;
 
 /**
  * Hafif event dispatcher — Laravel container varsa onun event dispatcher'ını kullanır,

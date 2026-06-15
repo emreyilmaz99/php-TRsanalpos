@@ -1,8 +1,8 @@
 <?php
 
-use EvrenOnur\SanalPos\Contracts\VirtualPOSServiceInterface;
-use EvrenOnur\SanalPos\DTOs\Bank;
-use EvrenOnur\SanalPos\Services\BankService;
+use Emreyilmaz99\SanalPos\Contracts\VirtualPOSServiceInterface;
+use Emreyilmaz99\SanalPos\DTOs\Bank;
+use Emreyilmaz99\SanalPos\Services\BankService;
 
 it('tüm banka listesi boş olmaz', function () {
     $banks = BankService::allBanks();

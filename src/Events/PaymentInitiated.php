@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Events;
+namespace Emreyilmaz99\SanalPos\Events;
 
 /**
  * Bir ödeme akışı başlatıldığında dispatch edilir: sale(), initializeHostedPayment().

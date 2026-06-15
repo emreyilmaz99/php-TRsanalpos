@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support;
+namespace Emreyilmaz99\SanalPos\Support;
 
-use EvrenOnur\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\Currency;
 
 class StringHelper
 {

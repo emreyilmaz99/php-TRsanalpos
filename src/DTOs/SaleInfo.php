@@ -1,9 +1,9 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs;
+namespace Emreyilmaz99\SanalPos\DTOs;
 
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Support\CardDataRedactor;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Support\CardDataRedactor;
 use JsonSerializable;
 
 class SaleInfo implements JsonSerializable

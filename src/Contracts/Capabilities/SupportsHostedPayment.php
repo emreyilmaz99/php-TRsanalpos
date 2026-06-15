@@ -1,12 +1,12 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Contracts\Capabilities;
+namespace Emreyilmaz99\SanalPos\Contracts\Capabilities;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\HostedPaymentResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
 
 /**
  * Hosted (banka barındırmalı) ödeme akışını destekleyen gateway'leri işaretler.

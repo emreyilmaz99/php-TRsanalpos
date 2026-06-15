@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Enums;
+namespace Emreyilmaz99\SanalPos\Enums;
 
 enum InstallmentCommissionPolicy: int
 {
