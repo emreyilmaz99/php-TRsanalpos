@@ -1,7 +1,7 @@
 <?php
 
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Support\StringHelper;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Support\StringHelper;
 
 it('maxLength string kırpar', function () {
     expect(StringHelper::maxLength('abcdef', 3))->toBe('abc');

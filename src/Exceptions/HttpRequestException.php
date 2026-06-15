@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Exceptions;
+namespace Emreyilmaz99\SanalPos\Exceptions;
 
 use RuntimeException;
 

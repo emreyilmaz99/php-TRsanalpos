@@ -1,10 +1,10 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Contracts\Capabilities;
+namespace Emreyilmaz99\SanalPos\Contracts\Capabilities;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleQueryResponse;
 
 /**
  * Tek bir siparişin durumunu sorgulamayı destekleyen gateway'leri işaretler.

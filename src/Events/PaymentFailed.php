@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Events;
+namespace Emreyilmaz99\SanalPos\Events;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
 
 class PaymentFailed extends PaymentEvent
 {

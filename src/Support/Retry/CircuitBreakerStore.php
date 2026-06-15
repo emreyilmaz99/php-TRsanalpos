@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support\Retry;
+namespace Emreyilmaz99\SanalPos\Support\Retry;
 
 /**
  * Circuit breaker state storage. Host (örn. "api.akbank.com") başına

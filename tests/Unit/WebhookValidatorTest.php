@@ -1,6 +1,6 @@
 <?php
 
-use EvrenOnur\SanalPos\Support\WebhookValidator;
+use Emreyilmaz99\SanalPos\Support\WebhookValidator;
 
 it('IP whitelist tam eşleşmeyi tanır', function () {
     expect(WebhookValidator::ipAllowed('1.2.3.4', ['1.2.3.4', '5.6.7.8']))->toBeTrue();

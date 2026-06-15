@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Requests;
+namespace Emreyilmaz99\SanalPos\DTOs\Requests;
 
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
 
 class AdditionalInstallmentQueryRequest
 {

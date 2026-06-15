@@ -1,15 +1,15 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways\Banks;
+namespace Emreyilmaz99\SanalPos\Gateways\Banks;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Gateways\AbstractGateway;
-use EvrenOnur\SanalPos\Support\StringHelper;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\AbstractGateway;
+use Emreyilmaz99\SanalPos\Support\StringHelper;
 
 class YapiKrediBankasiGateway extends AbstractGateway
 {

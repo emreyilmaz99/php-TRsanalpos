@@ -1,7 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property EvrenOnur\\SanalPos\\DTOs\\CustomerInfo\:\:\$city\.$#'
+			message: '#^Access to an undefined property Emreyilmaz99\\SanalPos\\DTOs\\CustomerInfo\:\:\$city\.$#'
 			identifier: property.notFound
 			count: 3
 			path: src/Gateways/Providers/TamiGateway.php

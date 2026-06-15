@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Responses;
+namespace Emreyilmaz99\SanalPos\DTOs\Responses;
 
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
 
 /**
  * Kart saklama sonucu. `card_token` sonraki çekimlerde card_number yerine kullanılır.

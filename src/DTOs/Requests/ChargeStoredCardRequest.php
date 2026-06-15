@@ -1,10 +1,10 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Requests;
+namespace Emreyilmaz99\SanalPos\DTOs\Requests;
 
-use EvrenOnur\SanalPos\DTOs\CustomerInfo;
-use EvrenOnur\SanalPos\DTOs\Payment3DConfig;
-use EvrenOnur\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\DTOs\CustomerInfo;
+use Emreyilmaz99\SanalPos\DTOs\Payment3DConfig;
+use Emreyilmaz99\SanalPos\Enums\Currency;
 
 /**
  * Saklanmış kart token'ı ile çekim. Bankaya kart numarası gönderilmez.

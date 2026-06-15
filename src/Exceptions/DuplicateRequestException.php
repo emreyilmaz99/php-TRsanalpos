@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Exceptions;
+namespace Emreyilmaz99\SanalPos\Exceptions;
 
 /**
  * Aynı idempotency_key ile kısa süre içinde tekrar istek atıldığında fırlatılır.

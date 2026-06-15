@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Requests;
+namespace Emreyilmaz99\SanalPos\DTOs\Requests;
 
 class DeleteStoredCardRequest
 {

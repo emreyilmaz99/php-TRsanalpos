@@ -1,9 +1,9 @@
 <?php
 
-use EvrenOnur\SanalPos\Exceptions\DuplicateRequestException;
-use EvrenOnur\SanalPos\SanalPosClient;
-use EvrenOnur\SanalPos\Support\IdempotencyStore;
-use EvrenOnur\SanalPos\Support\InMemoryIdempotencyStore;
+use Emreyilmaz99\SanalPos\Exceptions\DuplicateRequestException;
+use Emreyilmaz99\SanalPos\SanalPosClient;
+use Emreyilmaz99\SanalPos\Support\IdempotencyStore;
+use Emreyilmaz99\SanalPos\Support\InMemoryIdempotencyStore;
 
 beforeEach(function () {
     SanalPosClient::setIdempotencyStore(new InMemoryIdempotencyStore);

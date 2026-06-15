@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways\Banks\Nestpay;
+namespace Emreyilmaz99\SanalPos\Gateways\Banks\Nestpay;
 
 class AkbankNestpayGateway extends AbstractNestpayGateway
 {

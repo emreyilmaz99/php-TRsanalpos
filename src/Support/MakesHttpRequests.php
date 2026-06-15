@@ -1,11 +1,11 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support;
+namespace Emreyilmaz99\SanalPos\Support;
 
-use EvrenOnur\SanalPos\Exceptions\CircuitOpenException;
-use EvrenOnur\SanalPos\Exceptions\HttpRequestException;
-use EvrenOnur\SanalPos\Support\Retry\CircuitBreaker;
-use EvrenOnur\SanalPos\Support\Retry\RetryPolicy;
+use Emreyilmaz99\SanalPos\Exceptions\CircuitOpenException;
+use Emreyilmaz99\SanalPos\Exceptions\HttpRequestException;
+use Emreyilmaz99\SanalPos\Support\Retry\CircuitBreaker;
+use Emreyilmaz99\SanalPos\Support\Retry\RetryPolicy;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ConnectException;

@@ -1,40 +1,40 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways\Providers;
+namespace Emreyilmaz99\SanalPos\Gateways\Providers;
 
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Gateways\AbstractGateway;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\IyzicoHashGenerator;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\IyzicoHttpClient;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\IyzicoOptions;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoAddress;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoBasketItem;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoBuyer;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoPaymentCard;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateAmountBasedRefundRequest;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateCancelRequest;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateCheckoutFormInitializeRequest;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreatePaymentRequest;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\CreateThreedsPaymentRequest;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\RetrieveCheckoutFormRequest;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Request\RetrieveInstallmentInfoRequest;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsRefund;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\CancelResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\HostedPaymentResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\RefundResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\AbstractGateway;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\IyzicoHashGenerator;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\IyzicoHttpClient;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\IyzicoOptions;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoAddress;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoBasketItem;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoBuyer;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoPaymentCard;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\CreateAmountBasedRefundRequest;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\CreateCancelRequest;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\CreateCheckoutFormInitializeRequest;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\CreatePaymentRequest;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\CreateThreedsPaymentRequest;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\RetrieveCheckoutFormRequest;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request\RetrieveInstallmentInfoRequest;
 
 /**
  * Iyzico sanal POS gateway implementasyonu.

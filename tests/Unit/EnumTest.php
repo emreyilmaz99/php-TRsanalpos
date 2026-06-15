@@ -1,11 +1,11 @@
 <?php
 
-use EvrenOnur\SanalPos\Enums\Country;
-use EvrenOnur\SanalPos\Enums\CreditCardBrand;
-use EvrenOnur\SanalPos\Enums\CreditCardProgram;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\Country;
+use Emreyilmaz99\SanalPos\Enums\CreditCardBrand;
+use Emreyilmaz99\SanalPos\Enums\CreditCardProgram;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
 
 it('Currency::TRY değeri 949 olmalı', function () {
     expect(Currency::TRY->value)->toBe(949);

@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs;
+namespace Emreyilmaz99\SanalPos\DTOs;
 
 class Payment3DConfig
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Gateways\Providers\Payten;
+namespace Emreyilmaz99\SanalPos\Gateways\Providers\Payten;
 
 class VakifPaySGateway extends AbstractPaytenGateway
 {

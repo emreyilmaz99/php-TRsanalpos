@@ -7,14 +7,14 @@
  * Endpoint payhosting (securepay'den farklı).
  */
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Gateways\Banks\AkbankGateway;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\Banks\AkbankGateway;
 
 function akbankHostedAuth(): MerchantAuth
 {

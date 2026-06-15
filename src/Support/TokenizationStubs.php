@@ -1,16 +1,16 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support;
+namespace Emreyilmaz99\SanalPos\Support;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\StoreCardRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\StoreCardResponse;
-use EvrenOnur\SanalPos\Enums\ResponseStatus;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\StoreCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\StoreCardResponse;
+use Emreyilmaz99\SanalPos\Enums\ResponseStatus;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
 
 /**
  * VirtualPOSServiceInterface'in tokenization metotları için varsayılan stub'lar.

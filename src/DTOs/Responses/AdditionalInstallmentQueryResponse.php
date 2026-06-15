@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Responses;
+namespace Emreyilmaz99\SanalPos\DTOs\Responses;
 
-use EvrenOnur\SanalPos\DTOs\AdditionalInstallment;
+use Emreyilmaz99\SanalPos\DTOs\AdditionalInstallment;
 
 class AdditionalInstallmentQueryResponse
 {

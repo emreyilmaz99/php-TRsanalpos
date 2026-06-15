@@ -1,19 +1,19 @@
 <?php
 
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsTokenization;
-use EvrenOnur\SanalPos\DTOs\CustomerInfo;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\StoreCardRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\SanalPosClient;
-use EvrenOnur\SanalPos\Services\BankService;
-use EvrenOnur\SanalPos\Testing\FakeGateway;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsTokenization;
+use Emreyilmaz99\SanalPos\DTOs\CustomerInfo;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\StoreCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\SanalPosClient;
+use Emreyilmaz99\SanalPos\Services\BankService;
+use Emreyilmaz99\SanalPos\Testing\FakeGateway;
 
 afterEach(function () {
     SanalPosClient::fakeReset();

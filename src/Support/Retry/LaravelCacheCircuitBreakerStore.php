@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support\Retry;
+namespace Emreyilmaz99\SanalPos\Support\Retry;
 
 /**
  * Laravel cache backed circuit breaker store. Birden fazla process arasında

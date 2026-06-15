@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support;
+namespace Emreyilmaz99\SanalPos\Support;
 
 /**
  * XML çözümleme yardımcı sınıfı.

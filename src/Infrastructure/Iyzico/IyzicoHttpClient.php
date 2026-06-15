@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Infrastructure\Iyzico;
+namespace Emreyilmaz99\SanalPos\Infrastructure\Iyzico;
 
-use EvrenOnur\SanalPos\Support\MakesHttpRequests;
+use Emreyilmaz99\SanalPos\Support\MakesHttpRequests;
 
 /**
  * Iyzico REST HTTP istemcisi.

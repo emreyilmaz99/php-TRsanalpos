@@ -10,11 +10,11 @@
  * tests/Integration/VakifbankHostedSmokeTest.php (SANALPOS_LIVE=1 + creds gerekir).
  */
 
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\Enums\SaleResponseStatus;
-use EvrenOnur\SanalPos\Gateways\Banks\VakifbankGateway;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\Enums\SaleResponseStatus;
+use Emreyilmaz99\SanalPos\Gateways\Banks\VakifbankGateway;
 
 it('Vakıfbank SupportsHostedPayment marker taşır', function () {
     expect(new VakifbankGateway)->toBeInstanceOf(SupportsHostedPayment::class);

@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Requests;
+namespace Emreyilmaz99\SanalPos\DTOs\Requests;
 
-use EvrenOnur\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Enums\Currency;
 
 class CancelRequest
 {

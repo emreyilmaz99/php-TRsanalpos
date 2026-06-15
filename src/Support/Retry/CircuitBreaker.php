@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support\Retry;
+namespace Emreyilmaz99\SanalPos\Support\Retry;
 
-use EvrenOnur\SanalPos\Exceptions\CircuitOpenException;
+use Emreyilmaz99\SanalPos\Exceptions\CircuitOpenException;
 
 /**
  * Basit failure-count circuit breaker. Host başına ardışık fail sayısı

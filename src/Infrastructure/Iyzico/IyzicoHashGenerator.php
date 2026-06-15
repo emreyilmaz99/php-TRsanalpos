@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Infrastructure\Iyzico;
+namespace Emreyilmaz99\SanalPos\Infrastructure\Iyzico;
 
 /**
  * Iyzico IYZWSv2 authentication header generator.

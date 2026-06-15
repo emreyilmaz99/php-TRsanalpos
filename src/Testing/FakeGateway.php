@@ -1,35 +1,35 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Testing;
+namespace Emreyilmaz99\SanalPos\Testing;
 
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsRefund;
-use EvrenOnur\SanalPos\Contracts\Capabilities\SupportsTokenization;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentCallback;
-use EvrenOnur\SanalPos\DTOs\Requests\HostedPaymentRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\Sale3DResponse;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\StoreCardRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\HostedPaymentResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\SaleResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\StoreCardResponse;
-use EvrenOnur\SanalPos\Gateways\AbstractGateway;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsHostedPayment;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsRefund;
+use Emreyilmaz99\SanalPos\Contracts\Capabilities\SupportsTokenization;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\ChargeStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\DeleteStoredCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentCallback;
+use Emreyilmaz99\SanalPos\DTOs\Requests\HostedPaymentRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\Sale3DResponse;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\StoreCardRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\CancelResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\DeleteStoredCardResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\HostedPaymentResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\RefundResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\SaleResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\StoreCardResponse;
+use Emreyilmaz99\SanalPos\Gateways\AbstractGateway;
 
 /**
  * SanalPos::fake() etkinleştirildiğinde tüm banka çağrıları bu gateway'e gider.

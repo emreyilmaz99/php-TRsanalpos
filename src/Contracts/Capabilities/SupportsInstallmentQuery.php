@@ -1,14 +1,14 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Contracts\Capabilities;
+namespace Emreyilmaz99\SanalPos\Contracts\Capabilities;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AdditionalInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\AllInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AdditionalInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\AllInstallmentQueryResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\BINInstallmentQueryResponse;
 
 /**
  * Taksit sorgulama işlemlerini destekleyen gateway'leri işaretler.

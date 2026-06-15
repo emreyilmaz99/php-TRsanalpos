@@ -1,6 +1,6 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Infrastructure\Iyzico;
+namespace Emreyilmaz99\SanalPos\Infrastructure\Iyzico;
 
 /**
  * Iyzico PKI Request String builder.

@@ -1,14 +1,14 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Support;
+namespace Emreyilmaz99\SanalPos\Support;
 
-use EvrenOnur\SanalPos\DTOs\CustomerInfo;
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\SaleRequest;
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\DTOs\CustomerInfo;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\BINInstallmentQueryRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\SaleRequest;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
 use InvalidArgumentException;
 
 class ValidationHelper

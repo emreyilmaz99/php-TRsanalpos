@@ -1,12 +1,12 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Contracts\Capabilities;
+namespace Emreyilmaz99\SanalPos\Contracts\Capabilities;
 
-use EvrenOnur\SanalPos\DTOs\MerchantAuth;
-use EvrenOnur\SanalPos\DTOs\Requests\CancelRequest;
-use EvrenOnur\SanalPos\DTOs\Requests\RefundRequest;
-use EvrenOnur\SanalPos\DTOs\Responses\CancelResponse;
-use EvrenOnur\SanalPos\DTOs\Responses\RefundResponse;
+use Emreyilmaz99\SanalPos\DTOs\MerchantAuth;
+use Emreyilmaz99\SanalPos\DTOs\Requests\CancelRequest;
+use Emreyilmaz99\SanalPos\DTOs\Requests\RefundRequest;
+use Emreyilmaz99\SanalPos\DTOs\Responses\CancelResponse;
+use Emreyilmaz99\SanalPos\DTOs\Responses\RefundResponse;
 
 /**
  * İptal ve iade işlemlerini gerçek olarak destekleyen gateway'leri işaretler.

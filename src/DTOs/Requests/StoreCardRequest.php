@@ -1,8 +1,8 @@
 <?php
 
-namespace EvrenOnur\SanalPos\DTOs\Requests;
+namespace Emreyilmaz99\SanalPos\DTOs\Requests;
 
-use EvrenOnur\SanalPos\DTOs\CustomerInfo;
+use Emreyilmaz99\SanalPos\DTOs\CustomerInfo;
 
 /**
  * Karta token üretmek için (kart saklama). Sonraki çekimlerde kart numarası

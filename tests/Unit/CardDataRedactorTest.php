@@ -1,9 +1,9 @@
 <?php
 
-use EvrenOnur\SanalPos\DTOs\SaleInfo;
-use EvrenOnur\SanalPos\Enums\Currency;
-use EvrenOnur\SanalPos\Gateways\Providers\IyzicoGateway;
-use EvrenOnur\SanalPos\Support\CardDataRedactor;
+use Emreyilmaz99\SanalPos\DTOs\SaleInfo;
+use Emreyilmaz99\SanalPos\Enums\Currency;
+use Emreyilmaz99\SanalPos\Gateways\Providers\IyzicoGateway;
+use Emreyilmaz99\SanalPos\Support\CardDataRedactor;
 use Psr\Log\NullLogger;
 
 it('maskPan ilk 6 ve son 4 hanelidir, ortası yıldız', function () {

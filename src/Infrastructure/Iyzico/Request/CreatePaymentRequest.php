@@ -1,12 +1,12 @@
 <?php
 
-namespace EvrenOnur\SanalPos\Infrastructure\Iyzico\Request;
+namespace Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Request;
 
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoAddress;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoBasketItem;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoBuyer;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\Model\IyzicoPaymentCard;
-use EvrenOnur\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoAddress;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoBasketItem;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoBuyer;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\Model\IyzicoPaymentCard;
+use Emreyilmaz99\SanalPos\Infrastructure\Iyzico\PKIRequestStringBuilder;
 
 /**
  * Iyzico ödeme oluşturma isteği.
